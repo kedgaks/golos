@@ -48,10 +48,6 @@ namespace golos { namespace chain {
             GOLOS_THROW_MISSING_OBJECT("worker_proposal_object", fc::mutable_variant_object()("author",o.author)("permlink",o.permlink));
         }
 
-        GOLOS_CHECK_LOGIC(wpo_itr->type == task,
-            logic_exception::cannot_delete_worker_proposal_with_premade_work,
-            "Cannot delete worker proposal with premade work");
-
         GOLOS_CHECK_LOGIC(wpo_itr->state == created,
             logic_exception::cannot_delete_worker_proposal_with_approved_techspec,
             "Cannot delete worker proposal with approved techspec");
