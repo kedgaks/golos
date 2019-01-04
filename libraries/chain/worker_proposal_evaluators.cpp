@@ -78,12 +78,10 @@ namespace golos { namespace chain {
         GOLOS_CHECK_LOGIC(wpo_itr != wpo_idx.end(),
             logic_exception::worker_techspec_can_be_created_only_for_existing_proposal,
             "Worker techspec can be created only for existing proposal");
+
         GOLOS_CHECK_LOGIC(wpo_itr->state == created,
             logic_exception::this_worker_proposal_already_has_approved_techspec,
             "This worker proposal already has approved techspec");
-        GOLOS_CHECK_LOGIC(wpo_itr->type == task,
-            logic_exception::this_worker_proposal_has_premade_work,
-            "This worker proposal has premade work");
 
         const auto& wto_idx = _db.get_index<worker_techspec_index, by_worker_proposal>();
         auto wto_itr = wto_idx.find(std::make_tuple(o.worker_proposal_author, o.worker_proposal_permlink));
