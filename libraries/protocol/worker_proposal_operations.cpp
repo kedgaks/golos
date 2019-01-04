@@ -7,6 +7,10 @@ namespace golos { namespace protocol {
     void worker_proposal_operation::validate() const {
         GOLOS_CHECK_PARAM_ACCOUNT(author);
         GOLOS_CHECK_PARAM(permlink, validate_permlink(permlink));
+
+        GOLOS_CHECK_PARAM(type, {
+            GOLOS_CHECK_VALUE(type < _wpt_size, "This value is reserved");
+        });
     }
 
     void worker_proposal_delete_operation::validate() const {
