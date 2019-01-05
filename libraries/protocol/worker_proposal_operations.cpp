@@ -9,7 +9,7 @@ namespace golos { namespace protocol {
         GOLOS_CHECK_PARAM(permlink, validate_permlink(permlink));
 
         GOLOS_CHECK_PARAM(type, {
-            GOLOS_CHECK_VALUE(type < _wpt_size, "This value is reserved");
+            GOLOS_CHECK_VALUE(type < worker_proposal_type::_size, "This value is reserved");
         });
     }
 
@@ -35,6 +35,16 @@ namespace golos { namespace protocol {
     void worker_techspec_delete_operation::validate() const {
         GOLOS_CHECK_PARAM_ACCOUNT(author);
         GOLOS_CHECK_PARAM(permlink, validate_permlink(permlink));
+    }
+
+    void worker_techspec_approve_operation::validate() const {
+        GOLOS_CHECK_PARAM_ACCOUNT(approver);
+        GOLOS_CHECK_PARAM_ACCOUNT(author);
+        GOLOS_CHECK_PARAM(permlink, validate_permlink(permlink));
+
+        GOLOS_CHECK_PARAM(state, {
+            GOLOS_CHECK_VALUE(state < worker_techspec_approve_state::_size, "This value is reserved");
+        });
     }
 
 } } // golos::protocol

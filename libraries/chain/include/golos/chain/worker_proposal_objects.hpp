@@ -67,6 +67,24 @@ namespace golos { namespace chain {
         uint32_t payments_interval;
     };
 
+    class worker_techspec_approve_object : public object<worker_techspec_approve_object_type, worker_techspec_approve_object> {
+    public:
+        worker_techspec_approve_object() = delete;
+
+        template <typename Constructor, typename Allocator>
+        worker_techspec_approve_object(Constructor&& c, allocator <Allocator> a)
+            : permlink(a) {
+            c(*this);
+        };
+
+        id_type id;
+
+        account_name_type approver;
+        account_name_type author;
+        shared_string permlink;
+        worker_techspec_approve_state state;
+    };
+
     struct by_permlink;
 
     using worker_proposal_index = multi_index_container<
@@ -114,6 +132,27 @@ namespace golos { namespace chain {
                     chainbase::strcmp_less>>>,
         allocator<worker_techspec_object>>;
 
+    struct by_techspec_approver;
+
+    using worker_techspec_approve_index = multi_index_container<
+        worker_techspec_approve_object,
+        indexed_by<
+            ordered_unique<
+                tag<by_id>,
+                member<worker_techspec_approve_object, worker_techspec_approve_object_id_type, &worker_techspec_approve_object::id>>,
+            ordered_unique<
+                tag<by_techspec_approver>,
+                composite_key<
+                    worker_techspec_approve_object,
+                    member<worker_techspec_approve_object, account_name_type, &worker_techspec_approve_object::author>,
+                    member<worker_techspec_approve_object, shared_string, &worker_techspec_approve_object::permlink>,
+                    member<worker_techspec_approve_object, account_name_type, &worker_techspec_approve_object::approver>>,
+                composite_key_compare<
+                    std::less<account_name_type>,
+                    chainbase::strcmp_less,
+                    std::less<account_name_type>>>>,
+        allocator<worker_techspec_approve_object>>;
+
 } } // golos::chain
 
 CHAINBASE_SET_INDEX_TYPE(
@@ -123,3 +162,7 @@ CHAINBASE_SET_INDEX_TYPE(
 CHAINBASE_SET_INDEX_TYPE(
     golos::chain::worker_techspec_object,
     golos::chain::worker_techspec_index);
+
+CHAINBASE_SET_INDEX_TYPE(
+    golos::chain::worker_techspec_approve_object,
+    golos::chain::worker_techspec_approve_index);

@@ -1,4 +1,4 @@
-//TODO: rename me to worker_proposal_evaluators.hpp
+//TODO: rename me to worker_evaluators.cpp
 #include <golos/protocol/worker_proposal_operations.hpp>
 #include <golos/protocol/exceptions.hpp>
 #include <golos/chain/steem_evaluator.hpp>
@@ -144,6 +144,72 @@ namespace golos { namespace chain {
         }
 
         _db.remove(*wto_itr);
+    }
+
+    void worker_techspec_approve_evaluator::do_apply(const worker_techspec_approve_operation& o) {
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_techspec_approve_operation");
+
+        auto approver_witness = _db.get_witness(o.approver);
+        GOLOS_CHECK_LOGIC(approver_witness.schedule == witness_object::top19,
+            logic_exception::approver_of_techspec_should_be_in_top19_of_witnesses,
+            "Approver of techspec should be in Top 19 of witnesses");
+
+        const auto& wto_idx = _db.get_index<worker_techspec_index, by_permlink>();
+        auto wto_itr = wto_idx.find(std::make_tuple(o.author, o.permlink));
+        if (wto_itr == wto_idx.end()) {
+            GOLOS_THROW_MISSING_OBJECT("worker_techspec_object", fc::mutable_variant_object()("author",o.author)("permlink",o.permlink));
+        }
+
+        const auto& wpo_idx = _db.get_index<worker_proposal_index, by_permlink>();
+        auto wpo_itr = wpo_idx.find(std::make_tuple(wto_itr->worker_proposal_author, wto_itr->worker_proposal_permlink));
+
+        GOLOS_CHECK_LOGIC(wpo_itr->approved_techspec_permlink.empty(),
+            logic_exception::techspec_is_already_approved,
+            "Techspec is already approved");
+
+        const auto& wtao_idx = _db.get_index<worker_techspec_approve_index, by_techspec_approver>();
+        auto wtao_itr = wtao_idx.find(std::make_tuple(o.author, o.permlink, o.approver));
+
+        if (o.state == worker_techspec_approve_state::abstain) {
+            if (wtao_itr != wtao_idx.end()) {
+                _db.remove(*wtao_itr);
+            }
+
+            return;
+        }
+
+        if (wtao_itr != wtao_idx.end()) {
+            _db.modify(*wtao_itr, [&](worker_techspec_approve_object& wtao) {
+                wtao.state = o.state;
+            });
+        } else {
+            _db.create<worker_techspec_approve_object>([&](worker_techspec_approve_object& wtao) {
+                wtao.approver = o.approver;
+                wtao.author = o.author;
+                from_string(wtao.permlink, o.permlink);
+                wtao.state = o.state;
+            });
+        }
+
+        if (o.state == worker_techspec_approve_state::approve) {
+            auto approvers = 0;
+
+            wtao_itr = wtao_idx.lower_bound(std::make_tuple(o.author, o.permlink));
+            for (; wtao_itr != wtao_idx.end()
+                    && wtao_itr->author == o.author && to_string(wtao_itr->permlink) == o.permlink; ++wtao_itr) {
+                auto witness = _db.find_witness(wtao_itr->approver);
+                if (witness && witness->schedule == witness_object::top19 && wtao_itr->state == worker_techspec_approve_state::approve) {
+                    approvers++;
+                }
+            }
+
+            if (approvers >= STEEMIT_MAJOR_VOTED_WITNESSES) {
+                _db.modify(*wpo_itr, [&](worker_proposal_object& wpo) {
+                    wpo.approved_techspec_author = o.author;
+                    from_string(wpo.approved_techspec_permlink, o.permlink);
+                });
+            }
+        }
     }
 
 } } // golos::chain

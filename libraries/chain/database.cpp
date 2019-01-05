@@ -3091,6 +3091,7 @@ namespace golos { namespace chain {
             _my->_evaluator_registry.register_evaluator<worker_proposal_delete_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_techspec_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_techspec_delete_evaluator>();
+            _my->_evaluator_registry.register_evaluator<worker_techspec_approve_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
@@ -3138,6 +3139,7 @@ namespace golos { namespace chain {
             add_core_index<required_approval_index>(*this);
             add_core_index<worker_proposal_index>(*this);
             add_core_index<worker_techspec_index>(*this);
+            add_core_index<worker_techspec_approve_index>(*this);
 
             _plugin_index_signal();
         }
