@@ -1,4 +1,3 @@
-//TODO: rename me to worker_operations.hpp
 #pragma once
 
 #include <golos/protocol/asset.hpp>

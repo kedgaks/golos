@@ -20,7 +20,7 @@
 #include <golos/chain/operation_notification.hpp>
 #include <golos/chain/proposal_object.hpp>
 #include <golos/chain/curation_info.hpp>
-#include <golos/chain/worker_proposal_objects.hpp>
+#include <golos/chain/worker_objects.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 

@@ -1,4 +1,3 @@
-//TODO: rename me to worker_objects.hpp
 #pragma once
 
 #include <golos/chain/database.hpp>

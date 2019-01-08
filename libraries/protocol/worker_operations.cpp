@@ -1,4 +1,4 @@
-#include <golos/protocol/worker_proposal_operations.hpp>
+#include <golos/protocol/worker_operations.hpp>
 #include <golos/protocol/exceptions.hpp>
 #include <golos/protocol/validate_helper.hpp>
 
