@@ -3,7 +3,7 @@
 #include <golos/protocol/operation_util.hpp>
 #include <golos/protocol/proposal_operations.hpp>
 #include <golos/protocol/steem_operations.hpp>
-#include <golos/protocol/worker_proposal_operations.hpp>
+#include <golos/protocol/worker_operations.hpp>
 #include <golos/protocol/steem_virtual_operations.hpp>
 
 namespace golos { namespace protocol {

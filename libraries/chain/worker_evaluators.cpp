@@ -1,10 +1,9 @@
-//TODO: rename me to worker_evaluators.cpp
-#include <golos/protocol/worker_proposal_operations.hpp>
+#include <golos/protocol/worker_operations.hpp>
 #include <golos/protocol/exceptions.hpp>
 #include <golos/chain/steem_evaluator.hpp>
 #include <golos/chain/database.hpp>
 #include <golos/chain/steem_objects.hpp>
-#include <golos/chain/worker_proposal_objects.hpp>
+#include <golos/chain/worker_objects.hpp>
 
 namespace golos { namespace chain {
 

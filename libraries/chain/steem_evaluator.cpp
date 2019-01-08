@@ -3,7 +3,7 @@
 #include <golos/chain/custom_operation_interpreter.hpp>
 #include <golos/chain/steem_objects.hpp>
 #include <golos/chain/block_summary_object.hpp>
-#include <golos/chain/worker_proposal_objects.hpp>
+#include <golos/chain/worker_objects.hpp>
 
 #define GOLOS_CHECK_BALANCE(ACCOUNT, TYPE, REQUIRED ...) \
     FC_EXPAND_MACRO( \
