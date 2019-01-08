@@ -345,6 +345,8 @@ namespace golos {
             this_worker_proposal_already_has_approved_techspec,
             cannot_change_cost_symbol,
             cannot_delete_worker_techspec_for_paying_proposal,
+            approver_of_techspec_should_be_in_top19_of_witnesses,
+            techspec_is_already_approved,
 
             // custom operations
             inner_authorities_does_not_match_outer,
@@ -623,6 +625,8 @@ FC_REFLECT_ENUM(golos::logic_exception::error_types,
         (this_worker_proposal_already_has_approved_techspec)
         (cannot_change_cost_symbol)
         (cannot_delete_worker_techspec_for_paying_proposal)
+        (approver_of_techspec_should_be_in_top19_of_witnesses)
+        (techspec_is_already_approved)
 
         // custom operations
         (inner_authorities_does_not_match_outer)

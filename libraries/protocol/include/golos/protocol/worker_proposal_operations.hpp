@@ -7,16 +7,16 @@
 
 namespace golos { namespace protocol {
 
-    enum worker_proposal_type {
+    enum class worker_proposal_type {
         task,
         premade_work,
-        _wpt_size
+        _size
     };
 
     struct worker_proposal_operation : public base_operation {
         account_name_type author;
         std::string permlink;
-        worker_proposal_type type = task;
+        worker_proposal_type type = worker_proposal_type::task;
 
         extensions_type extensions;
 
@@ -74,9 +74,31 @@ namespace golos { namespace protocol {
         }
     };
 
+    enum class worker_techspec_approve_state {
+        approve,
+        disapprove,
+        abstain,
+        _size
+    };
+
+    struct worker_techspec_approve_operation : public base_operation {
+        account_name_type approver;
+        account_name_type author;
+        std::string permlink;
+        worker_techspec_approve_state state;
+
+        extensions_type extensions;
+
+        void validate() const;
+
+        void get_required_active_authorities(flat_set<account_name_type>& a) const {
+            a.insert(approver);
+        }
+    };
+
 } } // golos::protocol
 
-FC_REFLECT_ENUM(golos::protocol::worker_proposal_type, (task)(premade_work)(_wpt_size))
+FC_REFLECT_ENUM(golos::protocol::worker_proposal_type, (task)(premade_work)(_size))
 FC_REFLECT(
     (golos::protocol::worker_proposal_operation),
     (author)(permlink)(type)(extensions))
@@ -93,3 +115,8 @@ FC_REFLECT(
 FC_REFLECT(
     (golos::protocol::worker_techspec_delete_operation),
     (author)(permlink)(extensions))
+
+FC_REFLECT_ENUM(golos::protocol::worker_techspec_approve_state, (approve)(disapprove)(abstain)(_size))
+FC_REFLECT(
+    (golos::protocol::worker_techspec_approve_operation),
+    (approver)(author)(permlink)(state)(extensions))
