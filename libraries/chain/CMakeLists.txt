@@ -32,6 +32,7 @@ if(BUILD_SHARED_LIBRARIES)
             chain_properties_evaluators.cpp
             curation_info.cpp
             worker_evaluators.cpp
+            database_worker_objects.cpp
 
             include/golos/chain/account_object.hpp
             include/golos/chain/block_log.hpp
@@ -85,6 +86,7 @@ else()
             chain_properties_evaluators.cpp
             curation_info.cpp
             worker_evaluators.cpp
+            database_worker_objects.cpp
 
             include/golos/chain/account_object.hpp
             include/golos/chain/block_log.hpp

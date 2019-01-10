@@ -18,11 +18,10 @@ namespace golos { namespace chain {
 
         const auto now = _db.head_block_time();
 
-        const auto& wpo_idx = _db.get_index<worker_proposal_index, by_permlink>();
-        auto wpo_itr = wpo_idx.find(std::make_tuple(o.author, o.permlink));
+        const auto* wpo = _db.find_worker_proposal(o.author, o.permlink);
 
-        if (wpo_itr != wpo_idx.end()) {
-            _db.modify(*wpo_itr, [&](worker_proposal_object& wpo) {
+        if (wpo) {
+            _db.modify(*wpo, [&](worker_proposal_object& wpo) {
                 wpo.type = o.type;
                 wpo.modified = now;
             });
@@ -41,13 +40,9 @@ namespace golos { namespace chain {
     void worker_proposal_delete_evaluator::do_apply(const worker_proposal_delete_operation& o) {
         ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_proposal_delete_operation");
 
-        const auto& wpo_idx = _db.get_index<worker_proposal_index, by_permlink>();
-        auto wpo_itr = wpo_idx.find(std::make_tuple(o.author, o.permlink));
-        if (wpo_itr == wpo_idx.end()) {
-            GOLOS_THROW_MISSING_OBJECT("worker_proposal_object", fc::mutable_variant_object()("author",o.author)("permlink",o.permlink));
-        }
+        const auto& wpo = _db.get_worker_proposal(o.author, o.permlink);
 
-        GOLOS_CHECK_LOGIC(wpo_itr->state == created,
+        GOLOS_CHECK_LOGIC(wpo.state == created,
             logic_exception::cannot_delete_worker_proposal_with_approved_techspec,
             "Cannot delete worker proposal with approved techspec");
 
@@ -57,7 +52,7 @@ namespace golos { namespace chain {
             logic_exception::cannot_delete_worker_proposal_with_techspecs,
             "Cannot delete worker proposal with techspecs");
 
-        _db.remove(*wpo_itr);
+        _db.remove(wpo);
     }
 
     void worker_techspec_evaluator::do_apply(const worker_techspec_operation& o) {
@@ -71,14 +66,13 @@ namespace golos { namespace chain {
             logic_exception::worker_techspec_can_be_created_only_on_post,
             "Worker techspec can be created only on post");
 
-        const auto& wpo_idx = _db.get_index<worker_proposal_index, by_permlink>();
-        auto wpo_itr = wpo_idx.find(std::make_tuple(o.worker_proposal_author, o.worker_proposal_permlink));
+        const auto* wpo = _db.find_worker_proposal(o.worker_proposal_author, o.worker_proposal_permlink);
 
-        GOLOS_CHECK_LOGIC(wpo_itr != wpo_idx.end(),
+        GOLOS_CHECK_LOGIC(wpo,
             logic_exception::worker_techspec_can_be_created_only_for_existing_proposal,
             "Worker techspec can be created only for existing proposal");
 
-        GOLOS_CHECK_LOGIC(wpo_itr->state == created,
+        GOLOS_CHECK_LOGIC(wpo->state == created,
             logic_exception::this_worker_proposal_already_has_approved_techspec,
             "This worker proposal already has approved techspec");
 
@@ -123,26 +117,21 @@ namespace golos { namespace chain {
     void worker_techspec_delete_evaluator::do_apply(const worker_techspec_delete_operation& o) {
         ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_techspec_delete_operation");
 
-        const auto& wto_idx = _db.get_index<worker_techspec_index, by_permlink>();
-        auto wto_itr = wto_idx.find(std::make_tuple(o.author, o.permlink));
-        if (wto_itr == wto_idx.end()) {
-            GOLOS_THROW_MISSING_OBJECT("worker_techspec_object", fc::mutable_variant_object()("author",o.author)("permlink",o.permlink));
-        }
+        const auto& wto = _db.get_worker_techspec(o.author, o.permlink);
 
-        const auto& wpo_idx = _db.get_index<worker_proposal_index, by_permlink>();
-        auto wpo_itr = wpo_idx.find(std::make_tuple(wto_itr->worker_proposal_author, wto_itr->worker_proposal_permlink));
+        const auto& wpo = _db.get_worker_proposal(wto.worker_proposal_author, wto.worker_proposal_permlink);
 
-        GOLOS_CHECK_LOGIC(wpo_itr->state < payment,
+        GOLOS_CHECK_LOGIC(wpo.state < payment,
             logic_exception::cannot_delete_worker_techspec_for_paying_proposal,
             "Cannot delete worker techspec for paying proposal");
 
-        if (wpo_itr->approved_techspec_author == wto_itr->author && wpo_itr->approved_techspec_permlink == wto_itr->permlink) {
-            _db.modify(*wpo_itr, [&](worker_proposal_object& wpo) {
+        if (wpo.approved_techspec_author == wto.author && wpo.approved_techspec_permlink == wto.permlink) {
+            _db.modify(wpo, [&](worker_proposal_object& wpo) {
                 wpo.state = created;
             });
         }
 
-        _db.remove(*wto_itr);
+        _db.remove(wto);
     }
 
     void worker_techspec_approve_evaluator::do_apply(const worker_techspec_approve_operation& o) {
@@ -153,16 +142,11 @@ namespace golos { namespace chain {
             logic_exception::approver_of_techspec_should_be_in_top19_of_witnesses,
             "Approver of techspec should be in Top 19 of witnesses");
 
-        const auto& wto_idx = _db.get_index<worker_techspec_index, by_permlink>();
-        auto wto_itr = wto_idx.find(std::make_tuple(o.author, o.permlink));
-        if (wto_itr == wto_idx.end()) {
-            GOLOS_THROW_MISSING_OBJECT("worker_techspec_object", fc::mutable_variant_object()("author",o.author)("permlink",o.permlink));
-        }
+        const auto& wto = _db.get_worker_techspec(o.author, o.permlink);
 
-        const auto& wpo_idx = _db.get_index<worker_proposal_index, by_permlink>();
-        auto wpo_itr = wpo_idx.find(std::make_tuple(wto_itr->worker_proposal_author, wto_itr->worker_proposal_permlink));
+        const auto& wpo = _db.get_worker_proposal(wto.worker_proposal_author, wto.worker_proposal_permlink);
 
-        GOLOS_CHECK_LOGIC(wpo_itr->approved_techspec_permlink.empty(),
+        GOLOS_CHECK_LOGIC(wpo.approved_techspec_permlink.empty(),
             logic_exception::techspec_is_already_approved,
             "Techspec is already approved");
 
@@ -203,7 +187,7 @@ namespace golos { namespace chain {
             }
 
             if (approvers >= STEEMIT_MAJOR_VOTED_WITNESSES) {
-                _db.modify(*wpo_itr, [&](worker_proposal_object& wpo) {
+                _db.modify(wpo, [&](worker_proposal_object& wpo) {
                     wpo.approved_techspec_author = o.author;
                     from_string(wpo.approved_techspec_permlink, o.permlink);
                 });
