@@ -32,7 +32,7 @@ namespace golos { namespace chain {
             wpo.author = o.author;
             wpo.permlink = comment.permlink;
             wpo.type = o.type;
-            wpo.state = created;
+            wpo.state = worker_proposal_state::created;
             wpo.created = now;
         });
     }
@@ -42,7 +42,7 @@ namespace golos { namespace chain {
 
         const auto& wpo = _db.get_worker_proposal(o.author, o.permlink);
 
-        GOLOS_CHECK_LOGIC(wpo.state == created,
+        GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::created,
             logic_exception::cannot_delete_worker_proposal_with_approved_techspec,
             "Cannot delete worker proposal with approved techspec");
 
@@ -72,7 +72,7 @@ namespace golos { namespace chain {
             logic_exception::worker_techspec_can_be_created_only_for_existing_proposal,
             "Worker techspec can be created only for existing proposal");
 
-        GOLOS_CHECK_LOGIC(wpo->state == created,
+        GOLOS_CHECK_LOGIC(wpo->state == worker_proposal_state::created,
             logic_exception::this_worker_proposal_already_has_approved_techspec,
             "This worker proposal already has approved techspec");
 
@@ -121,13 +121,13 @@ namespace golos { namespace chain {
 
         const auto& wpo = _db.get_worker_proposal(wto.worker_proposal_author, wto.worker_proposal_permlink);
 
-        GOLOS_CHECK_LOGIC(wpo.state < payment,
+        GOLOS_CHECK_LOGIC(wpo.state < worker_proposal_state::payment,
             logic_exception::cannot_delete_worker_techspec_for_paying_proposal,
             "Cannot delete worker techspec for paying proposal");
 
         if (wpo.approved_techspec_author == wto.author && wpo.approved_techspec_permlink == wto.permlink) {
             _db.modify(wpo, [&](worker_proposal_object& wpo) {
-                wpo.state = created;
+                wpo.state = worker_proposal_state::created;
             });
         }
 
@@ -190,9 +190,75 @@ namespace golos { namespace chain {
                 _db.modify(wpo, [&](worker_proposal_object& wpo) {
                     wpo.approved_techspec_author = o.author;
                     from_string(wpo.approved_techspec_permlink, o.permlink);
+                    wpo.state = worker_proposal_state::techspec;
                 });
             }
         }
+    }
+
+    void worker_result_fill_evaluator::do_apply(const worker_result_fill_operation& o) {
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_result_fill_operation");
+
+        const auto now = _db.head_block_time();
+
+        GOLOS_CHECK_LOGIC(o.completion_date <= now,
+            logic_exception::work_completion_date_cannot_be_in_future,
+            "Work completion date cannot be in future");
+
+        const auto& comment = _db.get_comment(o.author, o.permlink);
+
+        GOLOS_CHECK_LOGIC(comment.parent_author == STEEMIT_ROOT_POST_PARENT,
+            logic_exception::worker_result_can_be_created_only_on_post,
+            "Worker result can be created only on post");
+
+        const auto& wto = _db.get_worker_techspec(o.author, o.worker_techspec_permlink);
+
+        const auto* wto_result = _db.find_worker_result(o.author, o.permlink);
+        GOLOS_CHECK_LOGIC(!wto_result,
+            logic_exception::this_post_already_used_as_worker_result,
+            "This post already used as worker result");
+
+        const auto& wpo = _db.get_worker_proposal(wto.worker_proposal_author, wto.worker_proposal_permlink);
+
+        GOLOS_CHECK_LOGIC(wpo.approved_techspec_author == o.author && wpo.approved_techspec_permlink == wto.permlink
+                && wpo.state == worker_proposal_state::work,
+            logic_exception::worker_result_can_be_created_only_for_techspec_in_work,
+            "Worker result can be created only for techspec in work");
+
+        _db.modify(wto, [&](worker_techspec_object& wto) {
+            from_string(wto.worker_result_permlink, o.permlink);
+
+            if (o.completion_date != time_point_sec::min()) {
+                wto.completion_date = o.completion_date;
+            } else {
+                wto.completion_date = now;
+            }
+        });
+
+        _db.modify(wpo, [&](worker_proposal_object& wpo) {
+            wpo.state = worker_proposal_state::witnesses_review;
+        });
+    }
+
+    void worker_result_clear_evaluator::do_apply(const worker_result_clear_operation& o) {
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_result_clear_operation");
+
+        const auto& wto = _db.get_worker_result(o.author, o.permlink);
+
+        const auto& wpo = _db.get_worker_proposal(wto.worker_proposal_author, wto.worker_proposal_permlink);
+
+        GOLOS_CHECK_LOGIC(wpo.state < worker_proposal_state::payment,
+            logic_exception::cannot_delete_worker_result_for_paying_proposal,
+            "Cannot delete worker result for paying proposal");
+
+        _db.modify(wpo, [&](worker_proposal_object& wpo) {
+            wpo.state = worker_proposal_state::work;
+        });
+
+        _db.modify(wto, [&](worker_techspec_object& wto) {
+            wto.worker_result_permlink.clear();
+            wto.completion_date = time_point::min();
+        });
     }
 
 } } // golos::chain
