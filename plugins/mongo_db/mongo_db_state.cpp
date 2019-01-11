@@ -1540,6 +1540,10 @@ namespace mongo_db {
 
     }
 
+    auto state_writer::operator()(const worker_result_approve_operation& op) -> result_type {
+
+    }
+
     auto state_writer::operator()(const fill_convert_request_operation& op) -> result_type {
         try {
             format_account(op.owner);

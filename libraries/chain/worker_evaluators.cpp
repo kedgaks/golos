@@ -261,4 +261,82 @@ namespace golos { namespace chain {
         });
     }
 
+    void worker_result_approve_evaluator::do_apply(const worker_result_approve_operation& o) {
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_result_approve_operation");
+
+        auto approver_witness = _db.get_witness(o.approver);
+        GOLOS_CHECK_LOGIC(approver_witness.schedule == witness_object::top19,
+            logic_exception::approver_of_result_should_be_in_top19_of_witnesses,
+            "Approver of result should be in Top 19 of witnesses");
+
+        const auto& wto = _db.get_worker_result(o.author, o.permlink);
+
+        const auto& wpo = _db.get_worker_proposal(wto.worker_proposal_author, wto.worker_proposal_permlink);
+
+        if (o.state == worker_techspec_approve_state::disapprove) {
+            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::work || wpo.state == worker_proposal_state::witnesses_review,
+                logic_exception::worker_proposal_should_be_in_work_or_review_state_to_disapprove,
+                "Worker proposal should be in work or review state to disapprove");
+        } else if (o.state == worker_techspec_approve_state::approve) {
+            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::witnesses_review,
+                logic_exception::worker_proposal_should_be_in_review_state_to_approve,
+                "Worker proposal should be in review state to approve");
+        }
+
+        const auto& wrao_idx = _db.get_index<worker_result_approve_index, by_result_approver>();
+        auto wrao_itr = wrao_idx.find(std::make_tuple(o.author, o.permlink, o.approver));
+
+        if (o.state == worker_techspec_approve_state::abstain) {
+            if (wrao_itr != wrao_idx.end()) {
+                _db.remove(*wrao_itr);
+            }
+
+            return;
+        }
+
+        if (wrao_itr != wrao_idx.end()) {
+            _db.modify(*wrao_itr, [&](worker_result_approve_object& wrao) {
+                wrao.state = o.state;
+            });
+        } else {
+            _db.create<worker_result_approve_object>([&](worker_result_approve_object& wrao) {
+                wrao.approver = o.approver;
+                wrao.author = o.author;
+                from_string(wrao.permlink, o.permlink);
+                wrao.state = o.state;
+            });
+        }
+
+        auto count_approvers = [&](auto state) {
+            auto approvers = 0;
+            wrao_itr = wrao_idx.lower_bound(std::make_tuple(o.author, o.permlink));
+            for (; wrao_itr != wrao_idx.end()
+                    && wrao_itr->author == o.author && to_string(wrao_itr->permlink) == o.permlink; ++wrao_itr) {
+                auto witness = _db.find_witness(wrao_itr->approver);
+                if (witness && witness->schedule == witness_object::top19 && wrao_itr->state == state) {
+                    approvers++;
+                }
+            }
+            return approvers;
+        };
+
+        if (o.state == worker_techspec_approve_state::disapprove) {
+            auto disapprovers = count_approvers(worker_techspec_approve_state::disapprove);
+
+            if (disapprovers >= STEEMIT_SUPER_MAJOR_VOTED_WITNESSES) {
+                _db.modify(wpo, [&](worker_proposal_object& wpo) {
+                    wpo.state = worker_proposal_state::closed;
+                });
+            }
+        } else if (o.state == worker_techspec_approve_state::approve) {
+            auto approvers = count_approvers(worker_techspec_approve_state::approve);
+
+            if (approvers >= STEEMIT_MAJOR_VOTED_WITNESSES) {
+                _db.modify(wpo, [&](worker_proposal_object& wpo) {
+                    wpo.state = worker_proposal_state::payment;
+                });
+            }
+        }
+    }
+
 } } // golos::chain
