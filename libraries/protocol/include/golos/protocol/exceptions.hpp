@@ -341,6 +341,9 @@ namespace golos {
             worker_proposal_can_be_created_only_on_post,
             cannot_delete_worker_proposal_with_approved_techspec,
             cannot_delete_worker_proposal_with_techspecs,
+            cannot_fund_worker_proposal_with_approved_techspec,
+            proposal_is_already_funded,
+            insufficient_funds_in_worker_fund,
             worker_techspec_can_be_created_only_on_post,
             worker_techspec_can_be_created_only_for_existing_proposal,
             this_worker_proposal_already_has_approved_techspec,
@@ -630,6 +633,9 @@ FC_REFLECT_ENUM(golos::logic_exception::error_types,
         (worker_proposal_can_be_created_only_on_post)
         (cannot_delete_worker_proposal_with_approved_techspec)
         (cannot_delete_worker_proposal_with_techspecs)
+        (cannot_fund_worker_proposal_with_approved_techspec)
+        (proposal_is_already_funded)
+        (insufficient_funds_in_worker_fund)
         (worker_techspec_can_be_created_only_on_post)
         (worker_techspec_can_be_created_only_for_existing_proposal)
         (this_worker_proposal_already_has_approved_techspec)

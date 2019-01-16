@@ -5,18 +5,6 @@
 #include <golos/chain/block_summary_object.hpp>
 #include <golos/chain/worker_objects.hpp>
 
-#define GOLOS_CHECK_BALANCE(ACCOUNT, TYPE, REQUIRED ...) \
-    FC_EXPAND_MACRO( \
-        FC_MULTILINE_MACRO_BEGIN \
-            asset exist = get_balance(ACCOUNT, TYPE, (REQUIRED).symbol); \
-            if( UNLIKELY( exist < (REQUIRED) )) { \
-                FC_THROW_EXCEPTION( golos::insufficient_funds, \
-                        "Account \"${account}\" does not have enough ${balance}: required ${required}, exist ${exist}", \
-                        ("account",ACCOUNT.name)("balance",get_balance_name(TYPE))("required",REQUIRED)("exist",exist)); \
-            } \
-        FC_MULTILINE_MACRO_END \
-    )
-
 #define GOLOS_CHECK_BANDWIDTH(NOW, NEXT, TYPE, MSG, ...) \
     GOLOS_ASSERT((NOW) > (NEXT), golos::bandwidth_exception, MSG, \
             ("bandwidth",TYPE)("now",NOW)("next",NEXT) __VA_ARGS__)
@@ -24,63 +12,6 @@
 
 namespace golos { namespace chain {
         using fc::uint128_t;
-
-    enum balance_type {
-        MAIN_BALANCE,
-        SAVINGS,
-        VESTING,
-        EFFECTIVE_VESTING,
-        HAVING_VESTING,
-        AVAILABLE_VESTING
-    };
-
-    asset get_balance(const account_object &account, balance_type type, asset_symbol_type symbol) {
-        switch(type) {
-            case MAIN_BALANCE:
-                switch (symbol) {
-                    case STEEM_SYMBOL:
-                        return account.balance;
-                    case SBD_SYMBOL:
-                        return account.sbd_balance;
-                    default:
-                        GOLOS_CHECK_VALUE(false, "invalid symbol");
-                }
-            case SAVINGS:
-                switch (symbol) {
-                    case STEEM_SYMBOL:
-                        return account.savings_balance;
-                    case SBD_SYMBOL:
-                        return account.savings_sbd_balance;
-                    default:
-                        GOLOS_CHECK_VALUE(false, "invalid symbol");
-                }
-            case VESTING:
-                GOLOS_CHECK_VALUE(symbol == VESTS_SYMBOL, "invalid symbol");
-                return account.vesting_shares;
-            case EFFECTIVE_VESTING:
-                GOLOS_CHECK_VALUE(symbol == VESTS_SYMBOL, "invalid symbol");
-                return account.effective_vesting_shares();
-            case HAVING_VESTING:
-                GOLOS_CHECK_VALUE(symbol == VESTS_SYMBOL, "invalid symbol");
-                return account.available_vesting_shares(false);
-            case AVAILABLE_VESTING:
-                GOLOS_CHECK_VALUE(symbol == VESTS_SYMBOL, "invalid symbol");
-                return account.available_vesting_shares(true);
-            default: FC_ASSERT(false, "invalid balance type");
-        }
-    }
-
-    std::string get_balance_name(balance_type type) {
-        switch(type) {
-            case MAIN_BALANCE: return "fund";
-            case SAVINGS: return "savings";
-            case VESTING: return "vesting shares";
-            case EFFECTIVE_VESTING: return "effective vesting shares";
-            case HAVING_VESTING: return "having vesting shares";
-            case AVAILABLE_VESTING: return "available vesting shares";
-            default: FC_ASSERT(false, "invalid balance type");
-        }
-    }
 
         inline void validate_permlink_0_1(const string &permlink) {
             GOLOS_CHECK_VALUE(permlink.size() > STEEMIT_MIN_PERMLINK_LENGTH &&

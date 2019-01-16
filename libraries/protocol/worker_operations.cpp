@@ -18,6 +18,16 @@ namespace golos { namespace protocol {
         GOLOS_CHECK_PARAM(permlink, validate_permlink(permlink));
     }
 
+    void worker_proposal_fund_operation::validate() const {
+        GOLOS_CHECK_PARAM_ACCOUNT(funder);
+        GOLOS_CHECK_PARAM_ACCOUNT(author);
+        GOLOS_CHECK_PARAM(permlink, validate_permlink(permlink));
+        GOLOS_CHECK_PARAM(amount, {
+            GOLOS_CHECK_ASSET_GOLOS(amount);
+            GOLOS_CHECK_VALUE(amount >= asset(0, STEEM_SYMBOL), "Worker proposal fund cannot be negative");
+        });
+    }
+
     void worker_techspec_operation::validate() const {
         GOLOS_CHECK_PARAM_ACCOUNT(author);
         GOLOS_CHECK_PARAM(permlink, validate_permlink(permlink));
@@ -25,11 +35,23 @@ namespace golos { namespace protocol {
         GOLOS_CHECK_PARAM(worker_proposal_permlink, validate_permlink(worker_proposal_permlink));
 
         GOLOS_CHECK_PARAM(specification_cost, {
+            GOLOS_CHECK_ASSET_GOLOS(specification_cost);
             GOLOS_CHECK_VALUE_GE(specification_cost.amount, 0);
         });
         GOLOS_CHECK_PARAM(development_cost, {
+            GOLOS_CHECK_ASSET_GOLOS(development_cost);
             GOLOS_CHECK_VALUE_GE(development_cost.amount, 0);
         });
+
+        GOLOS_CHECK_PARAM(payments_count, {
+            GOLOS_CHECK_VALUE_GE(payments_count, 1);
+        });
+        if (payments_count > 1) {
+            GOLOS_CHECK_PARAM(payments_interval, {
+                GOLOS_CHECK_VALUE_GT(payments_interval, 0);
+                GOLOS_CHECK_VALUE_LE(payments_interval * payments_count, development_eta);
+            });
+        }
     }
 
     void worker_techspec_delete_operation::validate() const {

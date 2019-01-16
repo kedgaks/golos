@@ -2555,6 +2555,40 @@ namespace golos { namespace chain {
             }
         }
 
+        void database::process_worker_cashout() {
+            if (!has_hardfork(STEEMIT_HARDFORK_0_20__1013)) {
+                return;
+            }
+
+            const auto now = head_block_time();
+
+            const auto& wpo_idx = get_index<worker_proposal_index, by_next_cashout_time>();
+
+            for (auto wpo_itr = wpo_idx.begin(); wpo_itr != wpo_idx.end() && wpo_itr->next_cashout_time <= now; ++wpo_itr) {
+                const auto& wto_idx = get_index<worker_techspec_index, by_worker_proposal>();
+                auto wto_itr = wto_idx.find(std::make_tuple(wpo_itr->approved_techspec_author, wpo_itr->approved_techspec_permlink));
+
+                const auto& reward = wto_itr->development_cost / wto_itr->payments_count;
+
+                adjust_balance(get_account(wpo_itr->worker), reward);
+
+                modify(*wpo_itr, [&](worker_proposal_object& wpo) {
+                    wpo.deposit -= reward;
+                    wpo.worker_payments_count++;
+
+                    if (wpo.worker_payments_count == wto_itr->payments_count) {
+                        wpo.state = worker_proposal_state::closed;
+                        wpo.next_cashout_time = time_point_sec::maximum();
+                        return;
+                    }
+
+                    wpo.next_cashout_time = now + wto_itr->payments_interval;
+                });
+
+                push_virtual_operation(worker_reward_operation(wpo_itr->worker, wpo_itr->author, to_string(wpo_itr->permlink), reward));
+            }
+        }
+
        /**
         *  At a start overall the network has an inflation rate of 15.15% of virtual golos per year.
         *  Each year the inflation rate is reduced by 0.42% and stops at 0.95% of virtual golos per year in 33 years.
@@ -3089,6 +3123,7 @@ namespace golos { namespace chain {
             _my->_evaluator_registry.register_evaluator<break_free_referral_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_proposal_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_proposal_delete_evaluator>();
+            _my->_evaluator_registry.register_evaluator<worker_proposal_fund_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_techspec_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_techspec_delete_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_techspec_approve_evaluator>();
@@ -3660,6 +3695,7 @@ namespace golos { namespace chain {
                 process_funds();
                 process_conversions();
                 process_comment_cashout();
+                process_worker_cashout();
                 process_vesting_withdrawals();
                 process_savings_withdraws();
                 pay_liquidity_reward();

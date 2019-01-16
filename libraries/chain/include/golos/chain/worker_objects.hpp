@@ -34,8 +34,9 @@ namespace golos { namespace chain {
         shared_string approved_techspec_permlink;
         account_name_type worker;
         time_point_sec work_beginning_time;
-        uint8_t worker_payments_count;
+        uint8_t worker_payments_count = 0;
         time_point_sec payment_beginning_time;
+        time_point_sec next_cashout_time = time_point_sec::maximum();
         time_point_sec created;
         time_point_sec modified;
     };
@@ -105,6 +106,7 @@ namespace golos { namespace chain {
     };
 
     struct by_permlink;
+    struct by_next_cashout_time;
 
     using worker_proposal_index = multi_index_container<
         worker_proposal_object,
@@ -120,7 +122,13 @@ namespace golos { namespace chain {
                     member<worker_proposal_object, shared_string, &worker_proposal_object::permlink>>,
                 composite_key_compare<
                     std::less<account_name_type>,
-                    chainbase::strcmp_less>>>,
+                    chainbase::strcmp_less>>,
+            ordered_unique<
+                tag<by_next_cashout_time>,
+                composite_key<
+                    worker_proposal_object,
+                    member<worker_proposal_object, time_point_sec, &worker_proposal_object::next_cashout_time>,
+                    member<worker_proposal_object, worker_proposal_object_id_type, &worker_proposal_object::id>>>>,
         allocator<worker_proposal_object>>;
 
     struct by_worker_proposal;

@@ -39,6 +39,21 @@ namespace golos { namespace protocol {
         }
     };
 
+    struct worker_proposal_fund_operation : public base_operation {
+        account_name_type funder;
+        account_name_type author;
+        std::string permlink;
+        asset amount;
+
+        extensions_type extensions;
+
+        void validate() const;
+
+        void get_required_active_authorities(flat_set<account_name_type>& a) const {
+            a.insert(funder);
+        }
+    };
+
     struct worker_techspec_operation : public base_operation {
         account_name_type author;
         std::string permlink;
@@ -148,6 +163,10 @@ FC_REFLECT(
 FC_REFLECT(
     (golos::protocol::worker_proposal_delete_operation),
     (author)(permlink)(extensions))
+
+FC_REFLECT(
+    (golos::protocol::worker_proposal_fund_operation),
+    (funder)(author)(permlink)(amount)(extensions))
 
 FC_REFLECT(
     (golos::protocol::worker_techspec_operation),

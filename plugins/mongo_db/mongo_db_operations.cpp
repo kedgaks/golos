@@ -616,6 +616,12 @@ namespace mongo_db {
         return body;
     }
 
+    auto operation_writer::operator()(const worker_proposal_fund_operation& op) -> result_type {
+        result_type body;
+
+        return body;
+    }
+
     auto operation_writer::operator()(const worker_techspec_operation& op) -> result_type {
         result_type body;
 
@@ -812,6 +818,16 @@ namespace mongo_db {
     }
 
     auto operation_writer::operator()(const auction_window_reward_operation& op) -> result_type {
+        result_type body;
+        return body;
+    }
+
+    auto operation_writer::operator()(const techspec_reward_operation& op) -> result_type {
+        result_type body;
+        return body;
+    }
+
+    auto operation_writer::operator()(const worker_reward_operation& op) -> result_type {
         result_type body;
         return body;
     }

@@ -55,6 +55,29 @@ namespace golos { namespace chain {
         _db.remove(wpo);
     }
 
+    void worker_proposal_fund_evaluator::do_apply(const worker_proposal_fund_operation& o) {
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_proposal_fund_operation");
+
+        const auto& wpo = _db.get_worker_proposal(o.author, o.permlink);
+
+        GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::created,
+            logic_exception::cannot_fund_worker_proposal_with_approved_techspec,
+            "Cannot fund worker proposal with approved techspec");
+
+        // TODO: allow to add funds
+        GOLOS_CHECK_LOGIC(wpo.deposit.amount == 0,
+            logic_exception::proposal_is_already_funded,
+            "Proposal is already funded");
+
+        const auto& funder = _db.get_account(o.funder);
+        GOLOS_CHECK_BALANCE(funder, MAIN_BALANCE, o.amount);
+        _db.adjust_balance(funder, -o.amount);
+
+        _db.modify(wpo, [&](worker_proposal_object& wpo) {
+            wpo.deposit = o.amount;
+        });
+    }
+
     void worker_techspec_evaluator::do_apply(const worker_techspec_operation& o) {
         ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_techspec_operation");
 
@@ -186,11 +209,31 @@ namespace golos { namespace chain {
                 }
             }
 
-            if (approvers >= STEEMIT_MAJOR_VOTED_WITNESSES) {
+            if (approvers < STEEMIT_MAJOR_VOTED_WITNESSES) {
+                return;
+            }
+
+            _db.modify(wpo, [&](worker_proposal_object& wpo) {
+                wpo.approved_techspec_author = o.author;
+                from_string(wpo.approved_techspec_permlink, o.permlink);
+                wpo.state = worker_proposal_state::techspec;
+            });
+
+            auto budget = wto.development_cost + wto.specification_cost;
+            auto append = budget - wpo.deposit;
+            if (append.amount > 0) {
+                const auto& gpo = _db.get_dynamic_global_properties();
+
+                GOLOS_CHECK_LOGIC(gpo.total_worker_fund_steem.amount >= append.amount,
+                   logic_exception::insufficient_funds_in_worker_fund,
+                   "Insufficient funds in worker fund");
+
+                _db.modify(gpo, [&](dynamic_global_property_object& gpo) {
+                    gpo.total_worker_fund_steem -= append;
+                });
+
                 _db.modify(wpo, [&](worker_proposal_object& wpo) {
-                    wpo.approved_techspec_author = o.author;
-                    from_string(wpo.approved_techspec_permlink, o.permlink);
-                    wpo.state = worker_proposal_state::techspec;
+                    wpo.deposit += append;
                 });
             }
         }
@@ -334,7 +377,16 @@ namespace golos { namespace chain {
             if (approvers >= STEEMIT_MAJOR_VOTED_WITNESSES) {
                 _db.modify(wpo, [&](worker_proposal_object& wpo) {
                     wpo.state = worker_proposal_state::payment;
+
+                    wpo.deposit -= wto.specification_cost;
+
+                    wpo.next_cashout_time = _db.head_block_time() + wto.payments_interval;
+                    wpo.payment_beginning_time = wpo.next_cashout_time;
                 });
+
+                _db.adjust_balance(_db.get_account(wto.author), wto.specification_cost);
+
+                _db.push_virtual_operation(techspec_reward_operation(wto.author, to_string(wto.permlink), wto.specification_cost));
             }
         }
     }

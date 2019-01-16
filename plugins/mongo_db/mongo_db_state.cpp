@@ -1520,6 +1520,10 @@ namespace mongo_db {
 
     }
 
+    auto state_writer::operator()(const worker_proposal_fund_operation& op) -> result_type {
+
+    }
+
     auto state_writer::operator()(const worker_techspec_operation& op) -> result_type {
 
     }
@@ -1957,6 +1961,14 @@ namespace mongo_db {
     }
 
     auto state_writer::operator()(const auction_window_reward_operation& op) -> result_type {
+
+    }
+
+    auto state_writer::operator()(const techspec_reward_operation& op) -> result_type {
+
+    }
+
+    auto state_writer::operator()(const worker_reward_operation& op) -> result_type {
 
     }
 

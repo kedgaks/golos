@@ -72,6 +72,7 @@ namespace golos { namespace protocol {
                 reject_vesting_shares_delegation_operation,
                 worker_proposal_operation,
                 worker_proposal_delete_operation,
+                worker_proposal_fund_operation,
                 worker_techspec_operation,
                 worker_techspec_delete_operation,
                 worker_techspec_approve_operation,
@@ -96,7 +97,9 @@ namespace golos { namespace protocol {
                 return_vesting_delegation_operation,
                 producer_reward_operation,
                 delegation_reward_operation,
-                auction_window_reward_operation
+                auction_window_reward_operation,
+                techspec_reward_operation,
+                worker_reward_operation
         > operation;
 
         /*void operation_get_required_authorities( const operation& op,

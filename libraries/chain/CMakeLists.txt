@@ -26,6 +26,7 @@ if(BUILD_SHARED_LIBRARIES)
             shared_authority.cpp
             #        transaction_object.cpp
             block_log.cpp
+            evaluator.cpp
             proposal_object.cpp
             proposal_evaluator.cpp
             database_proposal_object.cpp
@@ -80,6 +81,7 @@ else()
             shared_authority.cpp
             #        transaction_object.cpp
             block_log.cpp
+            evaluator.cpp
             proposal_object.cpp
             proposal_evaluator.cpp
             database_proposal_object.cpp
