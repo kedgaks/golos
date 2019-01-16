@@ -29,13 +29,8 @@ namespace golos { namespace chain {
         shared_string permlink;
         worker_proposal_type type;
         worker_proposal_state state;
-        asset deposit;
         account_name_type approved_techspec_author;
         shared_string approved_techspec_permlink;
-        account_name_type worker;
-        time_point_sec work_beginning_time;
-        uint8_t worker_payments_count;
-        time_point_sec payment_beginning_time;
         time_point_sec created;
         time_point_sec modified;
     };
@@ -62,10 +57,15 @@ namespace golos { namespace chain {
         uint32_t specification_eta;
         asset development_cost;
         uint32_t development_eta;
-        uint16_t payments_count;
-        uint32_t payments_interval;
+        account_name_type worker;
+        time_point_sec work_beginning_time;
         shared_string worker_result_permlink;
         time_point_sec completion_date;
+        uint16_t payments_count;
+        uint32_t payments_interval;
+        time_point_sec payment_beginning_time;
+        time_point_sec next_cashout_time = time_point_sec::maximum();
+        uint8_t finished_payments_count = 0;
     };
 
     class worker_techspec_approve_object : public object<worker_techspec_approve_object_type, worker_techspec_approve_object> {
@@ -125,6 +125,7 @@ namespace golos { namespace chain {
 
     struct by_worker_proposal;
     struct by_worker_result;
+    struct by_next_cashout_time;
 
     using worker_techspec_index = multi_index_container<
         worker_techspec_object,
@@ -158,7 +159,13 @@ namespace golos { namespace chain {
                     member<worker_techspec_object, shared_string, &worker_techspec_object::worker_result_permlink>>,
                 composite_key_compare<
                     std::less<account_name_type>,
-                    chainbase::strcmp_less>>>,
+                    chainbase::strcmp_less>>,
+            ordered_unique<
+                tag<by_next_cashout_time>,
+                composite_key<
+                    worker_techspec_object,
+                    member<worker_techspec_object, time_point_sec, &worker_techspec_object::next_cashout_time>,
+                    member<worker_techspec_object, worker_techspec_object_id_type, &worker_techspec_object::id>>>>,
         allocator<worker_techspec_object>>;
 
     struct by_techspec_approver;

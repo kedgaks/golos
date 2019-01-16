@@ -25,10 +25,24 @@ namespace golos { namespace protocol {
         GOLOS_CHECK_PARAM(worker_proposal_permlink, validate_permlink(worker_proposal_permlink));
 
         GOLOS_CHECK_PARAM(specification_cost, {
+            GOLOS_CHECK_ASSET_GOLOS(specification_cost);
             GOLOS_CHECK_VALUE_GE(specification_cost.amount, 0);
         });
         GOLOS_CHECK_PARAM(development_cost, {
+            GOLOS_CHECK_ASSET_GOLOS(development_cost);
             GOLOS_CHECK_VALUE_GE(development_cost.amount, 0);
+        });
+
+        GOLOS_CHECK_PARAM(payments_count, {
+            GOLOS_CHECK_VALUE_GE(payments_count, 1);
+        });
+        GOLOS_CHECK_PARAM(payments_interval, {
+            if (payments_count == 1) {
+                GOLOS_CHECK_VALUE_EQ(payments_interval, 0);
+                return;
+            }
+            GOLOS_CHECK_VALUE_GT(payments_interval, 0);
+            GOLOS_CHECK_VALUE_LE(payments_interval * payments_count, development_eta);
         });
     }
 
