@@ -443,7 +443,7 @@ namespace golos { namespace chain {
 
             const auto &comment = _db.get_comment(o.author, o.permlink);
 
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_20__1013)
+            if (_db.has_hardfork(STEEMIT_HARDFORK_0_21__1013)
                 && comment.parent_author == STEEMIT_ROOT_POST_PARENT) {
 
                 const auto* wpo = _db.find_worker_proposal(o.author, o.permlink);
