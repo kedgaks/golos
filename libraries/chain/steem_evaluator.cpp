@@ -1516,8 +1516,21 @@ namespace golos { namespace chain {
                         for (; vdo_itr != vdo_idx.end() && vdo_itr->delegatee == voter.name; ++vdo_itr) {
                             delegator_vote_interest_rate dvir;
                             dvir.account = vdo_itr->delegator;
-                            dvir.interest_rate = vdo_itr->vesting_shares.amount.value * vdo_itr->interest_rate
-                                                 / voter.effective_vesting_shares().amount.value;
+                            dvir.bad_interest_rate = vdo_itr->vesting_shares.amount.value * vdo_itr->interest_rate
+                                / voter.effective_vesting_shares().amount.value;
+
+                            dvir.interest_rate =
+                                (uint128_t(vdo_itr->vesting_shares.amount.value) * vdo_itr->interest_rate
+                                / voter.effective_vesting_shares().amount.value).to_uint64();
+
+                            if (dvir.bad_interest_rate != dvir.interest_rate) {
+                                elog("bad_interest_rate (${bad}) != interest_rate (${good}), "
+                                     "post ${author}.${permlink}, curator ${curator}, delegator ${delegator}",
+                                     ("bad", dvir.bad_interest_rate)("good", dvir.interest_rate)
+                                     ("author", comment.author)("permlink", comment.permlink)
+                                     ("curator", voter.name)("delegator", dvir.account));
+                            }
+
                             dvir.payout_strategy = vdo_itr->payout_strategy;
                             if (dvir.interest_rate > 0) {
                                 delegator_vote_interest_rates.emplace_back(std::move(dvir));

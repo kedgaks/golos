@@ -2292,6 +2292,17 @@ namespace golos { namespace chain {
             for (auto& dvir : cvo.delegator_vote_interest_rates) {
                 auto delegator_claim = claim * dvir.interest_rate / STEEMIT_100_PERCENT;
 
+                if (dvir.interest_rate != dvir.bad_interest_rate) {
+                    elog("post: ${author}.${permlink}, curator: ${curator}, delegator: ${delegator}, "
+                         "claim: ${claim}, rate: ${rate}, dclaim: ${dclaim}",
+                         ("curator", get<account_object, by_id>(cvo.voter).name)
+                         ("delegator", dvir.account)
+                         ("author", get_comment(cvo.comment).author)
+                         ("permlink", get_comment(cvo.comment).permlink)
+                         ("claim", claim)("rate", dvir.interest_rate)
+                         ("dclaim", delegator_claim));
+                }
+
                 if (delegator_claim == 0) {
                     continue;
                 }
