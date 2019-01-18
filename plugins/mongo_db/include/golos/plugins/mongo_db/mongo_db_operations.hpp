@@ -94,6 +94,8 @@ namespace mongo_db {
         result_type operator()(const chain_properties_update_operation& op);
         result_type operator()(const delegation_reward_operation& op);
         result_type operator()(const auction_window_reward_operation& op);
+        result_type operator()(const techspec_reward_operation& op);
+        result_type operator()(const worker_reward_operation& op);
     };
 
 }}} // golos::plugins::mongo_db

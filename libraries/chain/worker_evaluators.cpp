@@ -186,13 +186,15 @@ namespace golos { namespace chain {
                 }
             }
 
-            if (approvers >= STEEMIT_MAJOR_VOTED_WITNESSES) {
-                _db.modify(wpo, [&](worker_proposal_object& wpo) {
-                    wpo.approved_techspec_author = o.author;
-                    from_string(wpo.approved_techspec_permlink, o.permlink);
-                    wpo.state = worker_proposal_state::techspec;
-                });
+            if (approvers < STEEMIT_MAJOR_VOTED_WITNESSES) {
+                return;
             }
+
+            _db.modify(wpo, [&](worker_proposal_object& wpo) {
+                wpo.approved_techspec_author = o.author;
+                from_string(wpo.approved_techspec_permlink, o.permlink);
+                wpo.state = worker_proposal_state::techspec;
+            });
         }
     }
 
@@ -335,6 +337,21 @@ namespace golos { namespace chain {
                 _db.modify(wpo, [&](worker_proposal_object& wpo) {
                     wpo.state = worker_proposal_state::payment;
                 });
+
+                _db.modify(wto, [&](worker_techspec_object& wto) {
+                    wto.next_cashout_time = _db.head_block_time() + wto.payments_interval;
+                    wto.payment_beginning_time = wto.next_cashout_time;
+                });
+
+                const auto& gpo = _db.get_dynamic_global_properties();
+                _db.modify(gpo, [&](dynamic_global_property_object& gpo) {
+                    gpo.total_worker_fund_steem -= wto.specification_cost;
+                });
+
+                _db.adjust_balance(_db.get_account(wto.author), wto.specification_cost);
+
+//
+                _db.push_virtual_operation(techspec_reward_operation(wto.author, to_string(wto.permlink), wto.specification_cost));
             }
         }
     }

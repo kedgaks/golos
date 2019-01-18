@@ -1309,7 +1309,7 @@ namespace golos { namespace chain {
             }
         }
 
-        inline const void database::push_virtual_operation(const operation &op, bool force) {
+        const void database::push_virtual_operation(const operation &op, bool force) {
             if (!force && _skip_virtual_ops ) {
                 return;
             }
@@ -3663,6 +3663,7 @@ namespace golos { namespace chain {
                 process_funds();
                 process_conversions();
                 process_comment_cashout();
+                process_worker_cashout();
                 process_vesting_withdrawals();
                 process_savings_withdraws();
                 pay_liquidity_reward();
