@@ -8,7 +8,7 @@
 namespace golos { namespace chain {
 
     void worker_proposal_evaluator::do_apply(const worker_proposal_operation& o) {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_proposal_operation");
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_proposal_operation");
 
         const auto& comment = _db.get_comment(o.author, o.permlink);
 
@@ -38,7 +38,7 @@ namespace golos { namespace chain {
     }
 
     void worker_proposal_delete_evaluator::do_apply(const worker_proposal_delete_operation& o) {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_proposal_delete_operation");
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_proposal_delete_operation");
 
         const auto& wpo = _db.get_worker_proposal(o.author, o.permlink);
 
@@ -56,7 +56,7 @@ namespace golos { namespace chain {
     }
 
     void worker_techspec_evaluator::do_apply(const worker_techspec_operation& o) {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_techspec_operation");
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_techspec_operation");
 
         const auto now = _db.head_block_time();
 
@@ -115,7 +115,7 @@ namespace golos { namespace chain {
     }
 
     void worker_techspec_delete_evaluator::do_apply(const worker_techspec_delete_operation& o) {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_techspec_delete_operation");
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_techspec_delete_operation");
 
         const auto& wto = _db.get_worker_techspec(o.author, o.permlink);
 
@@ -135,7 +135,7 @@ namespace golos { namespace chain {
     }
 
     void worker_techspec_approve_evaluator::do_apply(const worker_techspec_approve_operation& o) {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_techspec_approve_operation");
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_techspec_approve_operation");
 
         auto approver_witness = _db.get_witness(o.approver);
         GOLOS_CHECK_LOGIC(approver_witness.schedule == witness_object::top19,
@@ -197,7 +197,7 @@ namespace golos { namespace chain {
     }
 
     void worker_result_fill_evaluator::do_apply(const worker_result_fill_operation& o) {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_result_fill_operation");
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_result_fill_operation");
 
         const auto now = _db.head_block_time();
 
@@ -241,7 +241,7 @@ namespace golos { namespace chain {
     }
 
     void worker_result_clear_evaluator::do_apply(const worker_result_clear_operation& o) {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_result_clear_operation");
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_result_clear_operation");
 
         const auto& wto = _db.get_worker_result(o.author, o.permlink);
 
@@ -262,7 +262,7 @@ namespace golos { namespace chain {
     }
 
     void worker_result_approve_evaluator::do_apply(const worker_result_approve_operation& o) {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_20__1013, "worker_result_approve_operation");
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_result_approve_operation");
 
         auto approver_witness = _db.get_witness(o.approver);
         GOLOS_CHECK_LOGIC(approver_witness.schedule == witness_object::top19,

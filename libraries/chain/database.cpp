@@ -2559,12 +2559,12 @@ namespace golos { namespace chain {
         *  At a start overall the network has an inflation rate of 15.15% of virtual golos per year.
         *  Each year the inflation rate is reduced by 0.42% and stops at 0.95% of virtual golos per year in 33 years.
         *
-        *  Before HF20:
+        *  Before HF21:
         *  66.67% of inflation is directed to content reward pool
         *  26.67% of inflation is directed to vesting fund
         *  6.66% of inflation is directed to witness pay
         *
-        *  After HF20:
+        *  After HF21:
         *  60.00% of inflation is directed to content reward pool
         *  24.00% of inflation is directed to vesting fund
         *  6.00% of inflation is directed to witness pay
@@ -2603,15 +2603,15 @@ namespace golos { namespace chain {
                 fc::safe<int64_t> witness_reward = 0;
                 fc::safe<int64_t> worker_reward = 0;
 
-                if (has_hardfork(STEEMIT_HARDFORK_0_20__1013)) {
+                if (has_hardfork(STEEMIT_HARDFORK_0_21__1013)) {
                     content_reward =
-                        (new_steem * STEEMIT_CONTENT_REWARD_PERCENT_HF20) /
+                        (new_steem * STEEMIT_CONTENT_REWARD_PERCENT_HF21) /
                         STEEMIT_100_PERCENT; /// 60.00% to content creator
                     vesting_reward =
-                        (new_steem * STEEMIT_VESTING_FUND_PERCENT_HF20) /
+                        (new_steem * STEEMIT_VESTING_FUND_PERCENT_HF21) /
                         STEEMIT_100_PERCENT; /// 24.00% to vesting fund
                     worker_reward =
-                        (new_steem * STEEMIT_WORKER_FUND_PERCENT_HF20) /
+                        (new_steem * STEEMIT_WORKER_FUND_PERCENT_HF21) /
                         STEEMIT_100_PERCENT; /// 10.00% to worker fund
                     witness_reward = new_steem - content_reward - vesting_reward - worker_reward; /// Remaining 6.00% to witness pay
                 } else {
