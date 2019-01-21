@@ -4562,6 +4562,9 @@ namespace golos { namespace chain {
             FC_ASSERT(STEEMIT_HARDFORK_0_20 == 20, "Invalid hardfork configuration");
             _hardfork_times[STEEMIT_HARDFORK_0_20] = fc::time_point_sec(STEEMIT_HARDFORK_0_20_TIME);
             _hardfork_versions[STEEMIT_HARDFORK_0_20] = STEEMIT_HARDFORK_0_20_VERSION;
+            FC_ASSERT(STEEMIT_HARDFORK_0_21 == 21, "Invalid hardfork configuration");
+            _hardfork_times[STEEMIT_HARDFORK_0_21] = fc::time_point_sec(STEEMIT_HARDFORK_0_21_TIME);
+            _hardfork_versions[STEEMIT_HARDFORK_0_21] = STEEMIT_HARDFORK_0_21_VERSION;
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -4819,6 +4822,8 @@ namespace golos { namespace chain {
                     break;
                 case STEEMIT_HARDFORK_0_20:
                     break;
+                case STEEMIT_HARDFORK_0_21:
+                    break;
                 default:
                     break;
             }
@@ -4951,7 +4956,8 @@ namespace golos { namespace chain {
                 }
 
                 total_supply += gpo.total_vesting_fund_steem +
-                                gpo.total_reward_fund_steem;
+                                gpo.total_reward_fund_steem +
+                                gpo.total_worker_fund_steem;
 
                 FC_ASSERT(gpo.current_supply ==
                           total_supply, "", ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));
