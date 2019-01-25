@@ -360,6 +360,10 @@ namespace golos {
             worker_proposal_should_be_in_review_state_to_approve,
             worker_techspec_already_has_final_result,
             cannot_delete_intermediate_for_techspec_with_final_result,
+            worker_can_be_assigned_only_to_proposal_with_approved_techspec,
+            worker_cannot_be_assigned_to_premade_proposal,
+            cannot_unassign_worker_from_finished_or_not_started_work,
+            worker_can_be_unassigned_only_by_techspec_author_or_himself,
 
             // custom operations
             inner_authorities_does_not_match_outer,
@@ -653,6 +657,10 @@ FC_REFLECT_ENUM(golos::logic_exception::error_types,
         (worker_proposal_should_be_in_review_state_to_approve)
         (worker_techspec_already_has_final_result)
         (cannot_delete_intermediate_for_techspec_with_final_result)
+        (worker_can_be_assigned_only_to_proposal_with_approved_techspec)
+        (worker_cannot_be_assigned_to_premade_proposal)
+        (cannot_unassign_worker_from_finished_or_not_started_work)
+        (worker_can_be_unassigned_only_by_techspec_author_or_himself)
 
         // custom operations
         (inner_authorities_does_not_match_outer)

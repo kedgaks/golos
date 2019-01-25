@@ -61,6 +61,18 @@ namespace golos { namespace protocol {
         });
     }
 
+    void worker_assign_operation::validate() const {
+        GOLOS_CHECK_PARAM_ACCOUNT(assigner);
+        GOLOS_CHECK_PARAM_ACCOUNT(worker_techspec_author);
+        GOLOS_CHECK_PARAM(worker_techspec_permlink, validate_permlink(worker_techspec_permlink));
+        if (worker.size()) {
+            GOLOS_CHECK_PARAM_ACCOUNT(worker);
+            GOLOS_CHECK_PARAM(assigner, {
+                GOLOS_CHECK_VALUE(assigner == worker_techspec_author, "Worker can be assigned only by techspec author");
+            });
+        }
+    }
+
     void worker_intermediate_operation::validate() const {
         GOLOS_CHECK_PARAM_ACCOUNT(author);
         GOLOS_CHECK_PARAM(permlink, validate_permlink(permlink));
