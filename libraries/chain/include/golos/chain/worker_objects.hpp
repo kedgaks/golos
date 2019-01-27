@@ -90,6 +90,24 @@ namespace golos { namespace chain {
         worker_techspec_approve_state state;
     };
 
+    class worker_intermediate_object : public object<worker_intermediate_object_type, worker_intermediate_object> {
+    public:
+        worker_intermediate_object() = delete;
+
+        template <typename Constructor, typename Allocator>
+        worker_intermediate_object(Constructor&& c, allocator <Allocator> a)
+            : permlink(a), worker_techspec_permlink(a) {
+            c(*this);
+        };
+
+        id_type id;
+
+        account_name_type author;
+        shared_string permlink;
+        shared_string worker_techspec_permlink;
+        time_point_sec created;
+    };
+
     class worker_result_approve_object : public object<worker_result_approve_object_type, worker_result_approve_object> {
     public:
         worker_result_approve_object() = delete;
@@ -253,6 +271,23 @@ namespace golos { namespace chain {
                     std::less<account_name_type>>>>,
         allocator<worker_techspec_approve_object>>;
 
+    using worker_intermediate_index = multi_index_container<
+        worker_intermediate_object,
+        indexed_by<
+            ordered_unique<
+                tag<by_id>,
+                member<worker_intermediate_object, worker_intermediate_object_id_type, &worker_intermediate_object::id>>,
+            ordered_unique<
+                tag<by_permlink>,
+                composite_key<
+                    worker_intermediate_object,
+                    member<worker_intermediate_object, account_name_type, &worker_intermediate_object::author>,
+                    member<worker_intermediate_object, shared_string, &worker_intermediate_object::permlink>>,
+                composite_key_compare<
+                    std::less<account_name_type>,
+                    chainbase::strcmp_less>>>,
+        allocator<worker_intermediate_object>>;
+
     struct by_result_approver;
 
     using worker_result_approve_index = multi_index_container<
@@ -285,6 +320,10 @@ CHAINBASE_SET_INDEX_TYPE(
 CHAINBASE_SET_INDEX_TYPE(
     golos::chain::worker_techspec_object,
     golos::chain::worker_techspec_index);
+
+CHAINBASE_SET_INDEX_TYPE(
+    golos::chain::worker_intermediate_object,
+    golos::chain::worker_intermediate_index);
 
 CHAINBASE_SET_INDEX_TYPE(
     golos::chain::worker_techspec_approve_object,
