@@ -209,6 +209,39 @@ namespace golos { namespace chain {
         }
     }
 
+    void worker_intermediate_evaluator::do_apply(const worker_intermediate_operation& o) {
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_intermediate_operation");
+
+        GOLOS_CHECK_OBJECT_MISSING(_db, worker_intermediate, o.author, o.permlink);
+
+        const auto& wto = _db.get_worker_techspec(o.author, o.worker_techspec_permlink);
+
+        GOLOS_CHECK_LOGIC(wto.worker_result_permlink.empty(),
+            logic_exception::worker_techspec_already_has_final_result,
+            "Worker techspec already has final result");
+
+        _db.create<worker_intermediate_object>([&](worker_intermediate_object& wio) {
+            wio.author = o.author;
+            from_string(wio.permlink, o.permlink);
+            from_string(wio.worker_techspec_permlink, o.worker_techspec_permlink);
+            wio.created = _db.head_block_time();
+        });
+    }
+
+    void worker_intermediate_delete_evaluator::do_apply(const worker_intermediate_delete_operation& o) {
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_intermediate_delete_operation");
+
+        const auto& wio = _db.get_worker_intermediate(o.author, o.permlink);
+
+        const auto& wto = _db.get_worker_techspec(o.author, wio.worker_techspec_permlink);
+
+        GOLOS_CHECK_LOGIC(wto.worker_result_permlink.empty(),
+            logic_exception::cannot_delete_intermediate_for_techspec_with_final_result,
+            "Cannot delete intermediate for techspec with final result");
+
+        _db.remove(wio);
+    }
+
     void worker_result_fill_evaluator::do_apply(const worker_result_fill_operation& o) {
         ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_result_fill_operation");
 

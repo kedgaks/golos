@@ -634,6 +634,18 @@ namespace mongo_db {
         return body;
     }
 
+    auto operation_writer::operator()(const worker_intermediate_operation& op) -> result_type {
+        result_type body;
+
+        return body;
+    }
+
+    auto operation_writer::operator()(const worker_intermediate_delete_operation& op) -> result_type {
+        result_type body;
+
+        return body;
+    }
+
     auto operation_writer::operator()(const worker_result_fill_operation& op) -> result_type {
         result_type body;
 

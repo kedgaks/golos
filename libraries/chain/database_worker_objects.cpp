@@ -102,6 +102,50 @@ namespace golos { namespace chain {
         return find<worker_techspec_object, by_worker_result>(std::make_tuple(author, permlink));
     }
 
+// Yet another temporary PoC
+// TODO: This can be generalized to generate all 3: get_, find_ and throw_if_exists_
+// methods with variable number of params (like DEFINE_/DECLARE_API + PLUGIN_API_VALIDATE_ARGS)
+#define DB_DEFINE_THROW_IF_EXIST(O, T1, N1, T2, N2) \
+    void database::throw_if_exists_##O(T1 N1, T2 N2) const { \
+        if (nullptr != find_##O(N1, N2)) { \
+            GOLOS_THROW_OBJECT_ALREADY_EXIST(#O, fc::mutable_variant_object()(#N1,N1)(#N2,N2)); \
+        } \
+    }
+
+    DB_DEFINE_THROW_IF_EXIST(worker_intermediate, const account_name_type&, author, const std::string&, permlink);
+
+    const worker_intermediate_object& database::get_worker_intermediate(
+        const account_name_type& author,
+        const std::string& permlink
+    ) const { try {
+        return get<worker_intermediate_object, by_permlink>(std::make_tuple(author, permlink));
+    } catch (const std::out_of_range &e) {
+        GOLOS_THROW_MISSING_OBJECT("worker_intermediate", fc::mutable_variant_object()("author",author)("permlink",permlink));
+    } FC_CAPTURE_AND_RETHROW((author)(permlink)) }
+
+    const worker_intermediate_object& database::get_worker_intermediate(
+        const account_name_type& author,
+        const shared_string& permlink
+    ) const { try {
+        return get<worker_intermediate_object, by_permlink>(std::make_tuple(author, permlink));
+    } catch (const std::out_of_range &e) {
+        GOLOS_THROW_MISSING_OBJECT("worker_intermediate", fc::mutable_variant_object()("author",author)("permlink",permlink));
+    } FC_CAPTURE_AND_RETHROW((author)(permlink)) }
+
+    const worker_intermediate_object* database::find_worker_intermediate(
+        const account_name_type& author,
+        const std::string& permlink
+    ) const {
+        return find<worker_intermediate_object, by_permlink>(std::make_tuple(author, permlink));
+    }
+
+    const worker_intermediate_object* database::find_worker_intermediate(
+        const account_name_type& author,
+        const shared_string& permlink
+    ) const {
+        return find<worker_intermediate_object, by_permlink>(std::make_tuple(author, permlink));
+    }
+
     void database::process_worker_cashout() {
         if (!has_hardfork(STEEMIT_HARDFORK_0_21__1013)) {
             return;
