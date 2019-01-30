@@ -510,7 +510,7 @@ namespace golos { namespace protocol {
          * and well functioning network. Any time @owner is in the active set of witnesses these
          * properties will be used to control the blockchain configuration.
          */
-        struct chain_properties_18: public chain_properties_17 {
+        struct chain_properties_18 : public chain_properties_17 {
 
             /**
              *  Minimum fee (in GOLOS) payed when create account with delegation
@@ -556,7 +556,7 @@ namespace golos { namespace protocol {
          * Users can invite referrals, and they will pay some percent of rewards to their referrers.
          * Referral can break paying for some fee.
          */
-        struct chain_properties_19: public chain_properties_18 {
+        struct chain_properties_19 : public chain_properties_18 {
 
             /**
              * Maximum percent of referral deductions
@@ -665,6 +665,21 @@ namespace golos { namespace protocol {
         };
 
         struct chain_properties_21 : public chain_properties_19 {
+
+            /**
+             * Percent of content fund growth on each block being redirected to worker fund
+             */
+            uint16_t worker_from_content_fund_percent = GOLOS_WORKER_FROM_CONTENT_FUND_PERCENT;
+
+            /**
+             * Percent of vesting fund growth on each block being redirected to worker fund
+             */
+            uint16_t worker_from_vesting_fund_percent = GOLOS_WORKER_FROM_VESTING_FUND_PERCENT;
+
+            /**
+             * Percent of witness fund growth on each block being redirected to worker fund
+             */
+            uint16_t worker_from_witness_fund_percent = GOLOS_WORKER_FROM_WITNESS_FUND_PERCENT;
 
             void validate() const;
 
@@ -1390,7 +1405,7 @@ FC_REFLECT_DERIVED(
     (curation_reward_curve)(allow_distribute_auction_reward)(allow_return_auction_reward_to_fund))
 FC_REFLECT_DERIVED(
     (golos::protocol::chain_properties_21), ((golos::protocol::chain_properties_19)),
-    BOOST_PP_SEQ_NIL)
+    (worker_from_content_fund_percent)(worker_from_vesting_fund_percent)(worker_from_witness_fund_percent))
 
 FC_REFLECT_TYPENAME((golos::protocol::versioned_chain_properties))
 
