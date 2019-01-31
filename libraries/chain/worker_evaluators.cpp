@@ -266,10 +266,18 @@ namespace golos { namespace chain {
 
         const auto& wpo = _db.get_worker_proposal(wto.worker_proposal_author, wto.worker_proposal_permlink);
 
-        GOLOS_CHECK_LOGIC(wpo.approved_techspec_author == o.author && wpo.approved_techspec_permlink == wto.permlink
-                && wpo.state == worker_proposal_state::work,
+        GOLOS_CHECK_LOGIC(wpo.approved_techspec_author == o.author && wpo.approved_techspec_permlink == wto.permlink,
             logic_exception::worker_result_can_be_created_only_for_techspec_in_work,
             "Worker result can be created only for techspec in work");
+        if (wpo.type == worker_proposal_type::premade_work) {
+            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::techspec,
+                logic_exception::worker_result_can_be_created_only_for_techspec_in_work,
+                "Worker result can be created only for techspec in work");
+        } else {
+            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::work,
+                logic_exception::worker_result_can_be_created_only_for_techspec_in_work,
+                "Worker result can be created only for techspec in work");
+        }
 
         _db.modify(wto, [&](worker_techspec_object& wto) {
             from_string(wto.worker_result_permlink, o.permlink);
@@ -394,10 +402,58 @@ namespace golos { namespace chain {
 
                 _db.adjust_balance(_db.get_account(wto.author), wto.specification_cost);
 
-//
                 _db.push_virtual_operation(techspec_reward_operation(wto.author, to_string(wto.permlink), wto.specification_cost));
             }
         }
+    }
+
+    void worker_assign_evaluator::do_apply(const worker_assign_operation& o) {
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_assign_operation");
+
+        _db.get_account(o.worker);
+
+        const auto& wto = _db.get_worker_techspec(o.worker_techspec_author, o.worker_techspec_permlink);
+
+        const auto& wpo = _db.get_worker_proposal(wto.worker_proposal_author, wto.worker_proposal_permlink);
+
+        if (!o.worker.size()) { // Unassign worker
+            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::work,
+                logic_exception::cannot_unassign_worker_from_finished_or_not_started_work,
+                "Cannot unassign worker from finished or not started work");
+
+            GOLOS_CHECK_LOGIC(o.assigner == wto.worker || o.assigner == wto.author,
+                logic_exception::worker_can_be_unassigned_only_by_techspec_author_or_himself,
+                "Worker can be unassigned only by techspec author or himself");
+
+            _db.modify(wpo, [&](worker_proposal_object& wpo) {
+                wpo.state = worker_proposal_state::techspec;
+            });
+
+            _db.modify(wto, [&](worker_techspec_object& wto) {
+                wto.worker = account_name_type();
+                wto.work_beginning_time = time_point_sec::min();
+            });
+
+            return;
+        }
+
+        GOLOS_CHECK_LOGIC(wpo.approved_techspec_author == wto.author && wpo.approved_techspec_permlink == wto.permlink
+                && wpo.state == worker_proposal_state::techspec,
+            logic_exception::worker_can_be_assigned_only_to_proposal_with_approved_techspec,
+            "Worker can be assigned only to proposal with approved techspec");
+
+        GOLOS_CHECK_LOGIC(wpo.type == worker_proposal_type::task,
+            logic_exception::worker_cannot_be_assigned_to_premade_proposal,
+            "Worker cannot be assigned to premade proposal");
+
+        _db.modify(wpo, [&](worker_proposal_object& wpo) {
+            wpo.state = worker_proposal_state::work;
+        });
+
+        _db.modify(wto, [&](worker_techspec_object& wto) {
+            wto.worker = o.worker;
+            wto.work_beginning_time = _db.head_block_time();
+        });
     }
 
 } } // golos::chain

@@ -90,5 +90,6 @@ namespace golos { namespace chain {
         DEFINE_EVALUATOR(worker_result_fill)
         DEFINE_EVALUATOR(worker_result_clear)
         DEFINE_EVALUATOR(worker_result_approve)
+        DEFINE_EVALUATOR(worker_assign)
 
 } } // golos::chain

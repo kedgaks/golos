@@ -122,6 +122,21 @@ namespace golos { namespace protocol {
         }
     };
 
+    struct worker_assign_operation : public base_operation {
+        account_name_type assigner;
+        account_name_type worker_techspec_author;
+        std::string worker_techspec_permlink;
+        account_name_type worker;
+
+        extensions_type extensions;
+
+        void validate() const;
+
+        void get_required_active_authorities(flat_set<account_name_type>& a) const {
+            a.insert(assigner);
+        }
+    };
+
     struct worker_result_fill_operation : public base_operation {
         account_name_type author;
         std::string permlink;
@@ -197,6 +212,10 @@ FC_REFLECT(
 FC_REFLECT(
     (golos::protocol::worker_intermediate_delete_operation),
     (author)(permlink)(extensions))
+
+FC_REFLECT(
+    (golos::protocol::worker_assign_operation),
+    (assigner)(worker_techspec_author)(worker_techspec_permlink)(worker)(extensions))
 
 FC_REFLECT(
     (golos::protocol::worker_result_fill_operation),
