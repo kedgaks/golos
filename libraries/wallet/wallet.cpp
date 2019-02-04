@@ -346,6 +346,11 @@ namespace golos { namespace wallet {
                         result["max_curation_percent"] = median_props.max_curation_percent;
                         result["curation_reward_curve"] = median_props.curation_reward_curve;
                     }
+                    if (hf >= hardfork_version(0, STEEMIT_HARDFORK_0_21)) {
+                        result["worker_from_content_fund_percent"] = median_props.worker_from_content_fund_percent;
+                        result["worker_from_vesting_fund_percent"] = median_props.worker_from_vesting_fund_percent;
+                        result["worker_from_witness_fund_percent"] = median_props.worker_from_witness_fund_percent;
+                    }
 
                     return result;
                 }
@@ -2279,6 +2284,9 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             if (hf >= hardfork_version(0, STEEMIT_HARDFORK_0_21)) {
                 chain_properties_21 p21;
                 p21 = p;
+                SET_PROP(p21, worker_from_content_fund_percent);
+                SET_PROP(p21, worker_from_vesting_fund_percent);
+                SET_PROP(p21, worker_from_witness_fund_percent);
                 op.props = p21;
             }
 #undef SET_PROP

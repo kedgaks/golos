@@ -40,6 +40,10 @@ namespace golos { namespace chain {
             return vesting_fund_;
         }
 
+        price get_vesting_share_price() const {
+            return price(vesting_shares_, vesting_fund_);
+        }
+
         asset claim_comment_reward(const comment_object& comment) {
             auto vshares = db_.calculate_vshares(comment.net_rshares.value);
             BOOST_REQUIRE_LE(vshares.to_uint64(), reward_shares_.to_uint64());
@@ -69,21 +73,21 @@ namespace golos { namespace chain {
             int64_t inflation_rate = STEEMIT_INFLATION_RATE_START_PERCENT;
             int64_t supply = db_.get_dynamic_global_properties().virtual_supply.amount.value;
 
-            int64_t total_reward = (supply * inflation_rate) / (int64_t(STEEMIT_100_PERCENT) * STEEMIT_BLOCKS_PER_YEAR);
+            auto total_reward = (supply * inflation_rate) / (int64_t(STEEMIT_100_PERCENT) * STEEMIT_BLOCKS_PER_YEAR);
+            auto content_reward = (total_reward * uint16_t(STEEMIT_CONTENT_REWARD_PERCENT)) / STEEMIT_100_PERCENT;
+            auto vesting_reward = total_reward * uint16_t(STEEMIT_VESTING_FUND_PERCENT) / STEEMIT_100_PERCENT;
+            auto witness_reward = total_reward - content_reward - vesting_reward;
 
-            int64_t content_reward = 0;
-            int64_t vesting_reward = 0;
-            int64_t worker_reward = 0;
             if (db_.has_hardfork(STEEMIT_HARDFORK_0_21__1013)) {
-                content_reward = total_reward * STEEMIT_CONTENT_REWARD_PERCENT_HF21 / STEEMIT_100_PERCENT;
-                vesting_reward = total_reward * STEEMIT_VESTING_FUND_PERCENT_HF21 / STEEMIT_100_PERCENT;
-                worker_reward = total_reward * STEEMIT_WORKER_FUND_PERCENT_HF21 / STEEMIT_100_PERCENT;
-            } else {
-                content_reward = (total_reward * STEEMIT_CONTENT_REWARD_PERCENT) / STEEMIT_100_PERCENT;
-                vesting_reward = total_reward * STEEMIT_VESTING_FUND_PERCENT / STEEMIT_100_PERCENT;
-            }
+                auto content_to_worker = content_reward * uint16_t(GOLOS_WORKER_FROM_CONTENT_FUND_PERCENT) / STEEMIT_100_PERCENT;
+                content_reward -= content_to_worker;
 
-            auto witness_reward = total_reward - content_reward - vesting_reward - worker_reward;
+                auto vesting_to_worker = vesting_reward * uint16_t(GOLOS_WORKER_FROM_VESTING_FUND_PERCENT) / STEEMIT_100_PERCENT;
+                vesting_reward -= vesting_to_worker;
+
+                auto witness_to_worker = witness_reward * uint16_t(GOLOS_WORKER_FROM_WITNESS_FUND_PERCENT) / STEEMIT_100_PERCENT;
+                witness_reward -= witness_to_worker;
+            }
 
             auto witness_normalize = db_.get_witness_schedule_object().witness_pay_normalization_factor;
             witness_reward = witness_reward * STEEMIT_MAX_WITNESSES / witness_normalize;
@@ -189,7 +193,7 @@ namespace golos { namespace chain {
         }
 
         asset total_payout() const {
-            return sbd_payout_ + db_.to_sbd(vesting_payout_ * db_.get_dynamic_global_properties().get_vesting_share_price());
+            return total_payout_;
         }
 
     private:
@@ -316,6 +320,7 @@ namespace golos { namespace chain {
 
             sbd_payout_ = asset(sbd_payout_value, SBD_SYMBOL);
             vesting_payout_ = fund_.create_vesting(asset(vesting_payout_value, STEEM_SYMBOL));
+            total_payout_ = sbd_payout_ + db_.to_sbd(vesting_payout_ * fund_.get_vesting_share_price());
         }
 
         comment_fund& fund_;
@@ -336,6 +341,7 @@ namespace golos { namespace chain {
 
         asset sbd_payout_;
         asset vesting_payout_;
+        asset total_payout_;
     };
 
 } } // namespace golos::chain
