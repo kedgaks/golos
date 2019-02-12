@@ -3278,7 +3278,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
         ) {
             WALLET_CHECK_UNLOCKED();
 
-            worker_result_clear_operation op;
+            worker_result_delete_operation op;
             op.author = author;
             op.permlink = permlink;
 

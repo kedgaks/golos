@@ -300,8 +300,8 @@ namespace golos { namespace chain {
         });
     }
 
-    void worker_result_clear_evaluator::do_apply(const worker_result_clear_operation& o) {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_result_clear_operation");
+    void worker_result_delete_evaluator::do_apply(const worker_result_delete_operation& o) {
+        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_result_delete_operation");
 
         const auto& wto = _db.get_worker_result(o.author, o.permlink);
 

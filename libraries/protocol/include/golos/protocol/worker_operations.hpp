@@ -152,7 +152,7 @@ namespace golos { namespace protocol {
         }
     };
 
-    struct worker_result_clear_operation : public base_operation {
+    struct worker_result_delete_operation : public base_operation {
         account_name_type author;
         std::string permlink;
 
@@ -222,7 +222,7 @@ FC_REFLECT(
     (author)(permlink)(worker_techspec_permlink)(completion_date)(extensions))
 
 FC_REFLECT(
-    (golos::protocol::worker_result_clear_operation),
+    (golos::protocol::worker_result_delete_operation),
     (author)(permlink)(extensions))
 
 FC_REFLECT(
