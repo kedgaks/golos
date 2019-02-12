@@ -67,9 +67,10 @@ namespace golos { namespace chain {
         time_point_sec completion_date;
         uint16_t payments_count;
         uint32_t payments_interval;
+        asset month_consumption;
         time_point_sec payment_beginning_time;
         time_point_sec next_cashout_time = time_point_sec::maximum();
-        uint8_t finished_payments_count = 0;
+        uint16_t finished_payments_count = 0;
     };
 
     class worker_techspec_approve_object : public object<worker_techspec_approve_object_type, worker_techspec_approve_object> {

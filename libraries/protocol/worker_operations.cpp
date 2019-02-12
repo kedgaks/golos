@@ -37,12 +37,11 @@ namespace golos { namespace protocol {
             GOLOS_CHECK_VALUE_GE(payments_count, 1);
         });
         GOLOS_CHECK_PARAM(payments_interval, {
+            GOLOS_CHECK_VALUE_GE(payments_interval, 1);
+
             if (payments_count == 1) {
-                GOLOS_CHECK_VALUE_EQ(payments_interval, 0);
-                return;
+                GOLOS_CHECK_VALUE_EQ(payments_interval, 1);
             }
-            GOLOS_CHECK_VALUE_GT(payments_interval, 0);
-            GOLOS_CHECK_VALUE_LE(payments_interval * payments_count, development_eta);
         });
     }
 

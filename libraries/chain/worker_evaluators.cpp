@@ -83,6 +83,7 @@ namespace golos { namespace chain {
             GOLOS_CHECK_LOGIC(o.permlink == to_string(wto_itr->permlink),
                 logic_exception::there_already_is_your_techspec_with_another_permlink,
                 "There already is your techspec with another permlink");
+
             GOLOS_CHECK_LOGIC(o.specification_cost.symbol == wto_itr->specification_cost.symbol,
                 logic_exception::cannot_change_cost_symbol,
                 "Cannot change cost symbol");
@@ -374,6 +375,8 @@ namespace golos { namespace chain {
             return approvers;
         };
 
+        const auto& gpo = _db.get_dynamic_global_properties();
+
         if (o.state == worker_techspec_approve_state::disapprove) {
             auto disapprovers = count_approvers(worker_techspec_approve_state::disapprove);
 
@@ -383,6 +386,18 @@ namespace golos { namespace chain {
                 });
             }
         } else if (o.state == worker_techspec_approve_state::approve) {
+            auto payments_period = int64_t(wto.payments_interval) * wto.payments_count;
+
+            uint128_t cost(wto.development_cost.amount.value);
+            cost += wto.specification_cost.amount.value;
+            cost *= std::min(fc::days(30).to_seconds(), payments_period);
+            cost /= payments_period;
+            auto consumption = asset(cost.to_uint64(), STEEM_SYMBOL);
+
+            GOLOS_CHECK_LOGIC((gpo.worker_consumption_per_month + consumption) <= gpo.worker_revenue_per_month,
+                logic_exception::insufficient_funds_to_approve_worker_result,
+                "Insufficient funds to approve worker result");
+
             auto approvers = count_approvers(worker_techspec_approve_state::approve);
 
             if (approvers >= STEEMIT_MAJOR_VOTED_WITNESSES) {
@@ -391,18 +406,14 @@ namespace golos { namespace chain {
                 });
 
                 _db.modify(wto, [&](worker_techspec_object& wto) {
+                    wto.month_consumption = consumption;
                     wto.next_cashout_time = _db.head_block_time() + wto.payments_interval;
                     wto.payment_beginning_time = wto.next_cashout_time;
                 });
 
-                const auto& gpo = _db.get_dynamic_global_properties();
                 _db.modify(gpo, [&](dynamic_global_property_object& gpo) {
-                    gpo.total_worker_fund_steem -= wto.specification_cost;
+                    gpo.worker_consumption_per_month += consumption;
                 });
-
-                _db.adjust_balance(_db.get_account(wto.author), wto.specification_cost);
-
-                _db.push_virtual_operation(techspec_reward_operation(wto.author, to_string(wto.permlink), wto.specification_cost));
             }
         }
     }
