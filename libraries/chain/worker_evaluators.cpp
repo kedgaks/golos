@@ -21,6 +21,10 @@ namespace golos { namespace chain {
         const auto* wpo = _db.find_worker_proposal(o.author, o.permlink);
 
         if (wpo) {
+            GOLOS_CHECK_LOGIC(wpo->state == worker_proposal_state::created,
+                logic_exception::cannot_edit_worker_proposal_with_approved_techspec,
+                "Cannot edit worker proposal with approved techspec");
+
             _db.modify(*wpo, [&](worker_proposal_object& wpo) {
                 wpo.type = o.type;
                 wpo.modified = now;
