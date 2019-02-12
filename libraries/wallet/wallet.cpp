@@ -3147,8 +3147,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
         annotated_signed_transaction wallet_api::worker_techspec(
                 const std::string& author, const std::string& permlink,
                 const std::string& worker_proposal_author, const std::string& worker_proposal_permlink,
-                const asset& specification_cost, uint32_t specification_eta,
-                const asset& development_cost, uint32_t development_eta,
+                const asset& specification_cost, const asset& development_cost,
                 uint16_t payments_count, uint32_t payments_interval, bool broadcast
         ) {
             WALLET_CHECK_UNLOCKED();
@@ -3159,9 +3158,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             op.worker_proposal_author = worker_proposal_author;
             op.worker_proposal_permlink = worker_proposal_permlink;
             op.specification_cost = specification_cost;
-            op.specification_eta = specification_eta;
             op.development_cost = development_cost;
-            op.development_eta = development_eta;
             op.payments_count = payments_count;
             op.payments_interval = payments_interval;
 

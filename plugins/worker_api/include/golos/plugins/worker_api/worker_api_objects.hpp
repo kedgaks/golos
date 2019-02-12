@@ -48,9 +48,7 @@ namespace golos { namespace plugins { namespace worker_api {
               modified(o.modified),
               net_rshares(o.net_rshares),
               specification_cost(o.specification_cost),
-              specification_eta(o.specification_eta),
               development_cost(o.development_cost),
-              development_eta(o.development_eta),
               approves(o.approves),
               disapproves(o.disapproves),
               worker(o.worker),
@@ -77,9 +75,7 @@ namespace golos { namespace plugins { namespace worker_api {
         time_point_sec modified;
         share_type net_rshares;
         asset specification_cost;
-        uint32_t specification_eta = 0;
         asset development_cost;
-        uint32_t development_eta = 0;
         uint16_t approves = 0;
         uint16_t disapproves = 0;
         account_name_type worker;
@@ -121,9 +117,8 @@ FC_REFLECT((golos::plugins::worker_api::worker_proposal_api_object),
 
 FC_REFLECT((golos::plugins::worker_api::worker_techspec_api_object),
     (author)(permlink)(post)(worker_proposal_author)(worker_proposal_permlink)(created)(modified)(net_rshares)(specification_cost)
-    (specification_eta)(development_cost)(development_eta)(approves)(disapproves)(worker)(work_beginning_time)
-    (worker_result_permlink)(completion_date)(payments_count)(payments_interval)(month_consumption)(payment_beginning_time)
-    (next_cashout_time)(finished_payments_count)
+    (development_cost)(approves)(disapproves)(worker)(work_beginning_time)(worker_result_permlink)(completion_date)(payments_count)
+    (payments_interval)(month_consumption)(payment_beginning_time)(next_cashout_time)(finished_payments_count)
 )
 
 FC_REFLECT((golos::plugins::worker_api::worker_intermediate_api_object),

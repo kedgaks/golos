@@ -56,9 +56,7 @@ namespace golos { namespace chain {
         time_point_sec modified;
         share_type net_rshares;
         asset specification_cost;
-        uint32_t specification_eta;
         asset development_cost;
-        uint32_t development_eta;
         uint16_t approves = 0;
         uint16_t disapproves = 0;
         account_name_type worker;

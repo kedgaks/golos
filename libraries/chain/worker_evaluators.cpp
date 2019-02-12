@@ -94,9 +94,7 @@ namespace golos { namespace chain {
             _db.modify(*wto_itr, [&](worker_techspec_object& wto) {
                 wto.modified = now;
                 wto.specification_cost = o.specification_cost;
-                wto.specification_eta = o.specification_eta;
                 wto.development_cost = o.development_cost;
-                wto.development_eta = o.development_eta;
                 wto.payments_count = o.payments_count;
                 wto.payments_interval = o.payments_interval;
             });
@@ -112,9 +110,7 @@ namespace golos { namespace chain {
             wto.created = now;
             wto.net_rshares = comment.net_rshares;
             wto.specification_cost = o.specification_cost;
-            wto.specification_eta = o.specification_eta;
             wto.development_cost = o.development_cost;
-            wto.development_eta = o.development_eta;
             wto.payments_count = o.payments_count;
             wto.payments_interval = o.payments_interval;
         });

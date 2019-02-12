@@ -45,9 +45,7 @@ namespace golos { namespace protocol {
         account_name_type worker_proposal_author;
         std::string worker_proposal_permlink;
         asset specification_cost;
-        uint32_t specification_eta;
         asset development_cost;
-        uint32_t development_eta;
         uint16_t payments_count;
         uint32_t payments_interval;
 
@@ -193,8 +191,8 @@ FC_REFLECT(
 
 FC_REFLECT(
     (golos::protocol::worker_techspec_operation),
-    (author)(permlink)(worker_proposal_author)(worker_proposal_permlink)(specification_cost)(specification_eta)
-    (development_cost)(development_eta)(payments_count)(payments_interval)(extensions))
+    (author)(permlink)(worker_proposal_author)(worker_proposal_permlink)(specification_cost)(development_cost)
+    (payments_count)(payments_interval)(extensions))
 
 FC_REFLECT(
     (golos::protocol::worker_techspec_delete_operation),
