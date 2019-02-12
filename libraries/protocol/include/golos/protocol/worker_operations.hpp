@@ -175,7 +175,7 @@ namespace golos { namespace protocol {
 
         void validate() const;
 
-        void get_required_active_authorities(flat_set<account_name_type>& a) const {
+        void get_required_posting_authorities(flat_set<account_name_type>& a) const {
             a.insert(approver);
         }
     };
