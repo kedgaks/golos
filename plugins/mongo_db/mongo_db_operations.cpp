@@ -646,7 +646,7 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const worker_result_fill_operation& op) -> result_type {
+    auto operation_writer::operator()(const worker_result_operation& op) -> result_type {
         result_type body;
 
         return body;
