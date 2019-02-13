@@ -226,6 +226,21 @@ namespace golos { namespace chain {
             logic_exception::worker_techspec_already_has_final_result,
             "Worker techspec already has final result");
 
+        const auto& wpo = _db.get_worker_proposal(wto.worker_proposal_author, wto.worker_proposal_permlink);
+
+        GOLOS_CHECK_LOGIC(wpo.approved_techspec_author == o.author && wpo.approved_techspec_permlink == wto.permlink,
+            logic_exception::worker_result_can_be_created_only_for_techspec_in_work,
+            "Worker result can be created only for techspec in work");
+        if (wpo.type == worker_proposal_type::premade_work) {
+            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::techspec,
+                logic_exception::worker_result_can_be_created_only_for_techspec_in_work,
+                "Worker result can be created only for techspec in work");
+        } else {
+            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::work,
+                logic_exception::worker_result_can_be_created_only_for_techspec_in_work,
+                "Worker result can be created only for techspec in work");
+        }
+
         _db.create<worker_intermediate_object>([&](worker_intermediate_object& wio) {
             wio.author = o.author;
             from_string(wio.permlink, o.permlink);
