@@ -1540,11 +1540,11 @@ namespace mongo_db {
 
     }
 
-    auto state_writer::operator()(const worker_result_fill_operation& op) -> result_type {
+    auto state_writer::operator()(const worker_result_operation& op) -> result_type {
 
     }
 
-    auto state_writer::operator()(const worker_result_clear_operation& op) -> result_type {
+    auto state_writer::operator()(const worker_result_delete_operation& op) -> result_type {
 
     }
 
