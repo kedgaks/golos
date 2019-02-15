@@ -225,7 +225,6 @@ namespace golos {
             cannot_delete_comment_with_positive_votes,
             cannot_delete_post_with_worker_proposal,
             cannot_delete_post_with_worker_techspec,
-            cannot_delete_post_with_worker_intermediate,
             cannot_delete_post_with_worker_result,
             comment_options_requires_no_rshares,
             curation_rewards_cannot_be_reenabled,
@@ -360,7 +359,6 @@ namespace golos {
             worker_proposal_should_be_in_work_or_review_state_to_disapprove,
             worker_proposal_should_be_in_review_state_to_approve,
             worker_techspec_already_has_final_result,
-            cannot_delete_intermediate_for_techspec_with_final_result,
             worker_can_be_assigned_only_to_proposal_with_approved_techspec,
             worker_cannot_be_assigned_to_premade_proposal,
             cannot_unassign_worker_from_finished_or_not_started_work,
@@ -525,7 +523,6 @@ FC_REFLECT_ENUM(golos::logic_exception::error_types,
         (cannot_delete_comment_with_positive_votes)
         (cannot_delete_post_with_worker_proposal)
         (cannot_delete_post_with_worker_techspec)
-        (cannot_delete_post_with_worker_intermediate)
         (cannot_delete_post_with_worker_result)
         (comment_options_requires_no_rshares)
         (curation_rewards_cannot_be_reenabled)
@@ -660,7 +657,6 @@ FC_REFLECT_ENUM(golos::logic_exception::error_types,
         (worker_proposal_should_be_in_work_or_review_state_to_disapprove)
         (worker_proposal_should_be_in_review_state_to_approve)
         (worker_techspec_already_has_final_result)
-        (cannot_delete_intermediate_for_techspec_with_final_result)
         (worker_can_be_assigned_only_to_proposal_with_approved_techspec)
         (worker_cannot_be_assigned_to_premade_proposal)
         (cannot_unassign_worker_from_finished_or_not_started_work)

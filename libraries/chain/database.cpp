@@ -3102,8 +3102,6 @@ namespace golos { namespace chain {
             _my->_evaluator_registry.register_evaluator<worker_techspec_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_techspec_delete_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_techspec_approve_evaluator>();
-            _my->_evaluator_registry.register_evaluator<worker_intermediate_evaluator>();
-            _my->_evaluator_registry.register_evaluator<worker_intermediate_delete_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_result_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_result_delete_evaluator>();
             _my->_evaluator_registry.register_evaluator<worker_result_approve_evaluator>();
@@ -3155,7 +3153,6 @@ namespace golos { namespace chain {
             add_core_index<required_approval_index>(*this);
             add_core_index<worker_proposal_index>(*this);
             add_core_index<worker_techspec_index>(*this);
-            add_core_index<worker_intermediate_index>(*this);
             add_core_index<worker_techspec_approve_index>(*this);
             add_core_index<worker_result_approve_index>(*this);
 

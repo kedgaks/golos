@@ -72,17 +72,6 @@ namespace golos { namespace protocol {
         }
     }
 
-    void worker_intermediate_operation::validate() const {
-        GOLOS_CHECK_PARAM_ACCOUNT(author);
-        GOLOS_CHECK_PARAM(permlink, validate_permlink(permlink));
-        GOLOS_CHECK_PARAM(worker_techspec_permlink, validate_permlink(worker_techspec_permlink));
-    }
-
-    void worker_intermediate_delete_operation::validate() const {
-        GOLOS_CHECK_PARAM_ACCOUNT(author);
-        GOLOS_CHECK_PARAM(permlink, validate_permlink(permlink));
-    }
-
     void worker_result_operation::validate() const {
         GOLOS_CHECK_PARAM_ACCOUNT(author);
         GOLOS_CHECK_PARAM(permlink, validate_permlink(permlink));

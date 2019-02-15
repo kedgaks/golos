@@ -90,25 +90,6 @@ namespace golos { namespace plugins { namespace worker_api {
         uint16_t finished_payments_count = 0;
     };
 
-    struct worker_intermediate_api_object {
-        worker_intermediate_api_object(const worker_intermediate_object& o, const comment_api_object& p)
-            : author(o.author),
-              permlink(to_string(o.permlink)),
-              post(p),
-              worker_techspec_permlink(to_string(o.worker_techspec_permlink)),
-              created(o.created) {
-        }
-
-        worker_intermediate_api_object() {
-        }
-
-        account_name_type author;
-        std::string permlink;
-        comment_api_object post;
-        std::string worker_techspec_permlink;
-        time_point_sec created;
-    };
-
 } } } // golos::plugins::worker_api
 
 FC_REFLECT((golos::plugins::worker_api::worker_proposal_api_object),
@@ -119,8 +100,4 @@ FC_REFLECT((golos::plugins::worker_api::worker_techspec_api_object),
     (author)(permlink)(post)(worker_proposal_author)(worker_proposal_permlink)(created)(modified)(net_rshares)(specification_cost)
     (development_cost)(approves)(disapproves)(worker)(work_beginning_time)(worker_result_permlink)(completion_date)(payments_count)
     (payments_interval)(month_consumption)(payment_beginning_time)(next_cashout_time)(finished_payments_count)
-)
-
-FC_REFLECT((golos::plugins::worker_api::worker_intermediate_api_object),
-    (author)(permlink)(post)(worker_techspec_permlink)(created)
 )

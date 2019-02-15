@@ -3201,39 +3201,6 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return my->sign_transaction(tx, broadcast);
         }
 
-        annotated_signed_transaction wallet_api::worker_intermediate(
-                const std::string& author, const std::string& permlink, const std::string& worker_techspec_permlink,
-                bool broadcast
-        ) {
-            WALLET_CHECK_UNLOCKED();
-
-            worker_intermediate_operation op;
-            op.author = author;
-            op.permlink = permlink;
-            op.worker_techspec_permlink = worker_techspec_permlink;
-
-            signed_transaction tx;
-            tx.operations.push_back(op);
-            tx.validate();
-            return my->sign_transaction(tx, broadcast);
-        }
-
-        annotated_signed_transaction wallet_api::delete_worker_intermediate(
-                const std::string& author, const std::string& permlink,
-                bool broadcast
-        ) {
-            WALLET_CHECK_UNLOCKED();
-
-            worker_intermediate_delete_operation op;
-            op.author = author;
-            op.permlink = permlink;
-
-            signed_transaction tx;
-            tx.operations.push_back(op);
-            tx.validate();
-            return my->sign_transaction(tx, broadcast);
-        }
-
         annotated_signed_transaction wallet_api::assign_worker(
                 const std::string& assigner, const std::string& worker_techspec_author,
                 const std::string& worker_techspec_permlink, const std::string& worker, bool broadcast

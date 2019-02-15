@@ -190,12 +190,6 @@ namespace golos { namespace chain {
             const worker_techspec_object* find_worker_result(const account_name_type& author, const std::string& permlink) const;
             const worker_techspec_object* find_worker_result(const account_name_type& author, const shared_string& permlink) const;
 
-            const worker_intermediate_object& get_worker_intermediate(const account_name_type& author, const std::string& permlink) const;
-            const worker_intermediate_object& get_worker_intermediate(const account_name_type& author, const shared_string& permlink) const;
-            const worker_intermediate_object* find_worker_intermediate(const account_name_type& author, const std::string& permlink) const;
-            const worker_intermediate_object* find_worker_intermediate(const account_name_type& author, const shared_string& permlink) const;
-            void throw_if_exists_worker_intermediate(const account_name_type&, const std::string&) const;
-
             const comment_object &get_comment(const account_name_type &author, const shared_string &permlink) const;
 
             const comment_object *find_comment(const account_name_type &author, const shared_string &permlink) const;
