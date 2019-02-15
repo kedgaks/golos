@@ -1461,30 +1461,6 @@ namespace golos { namespace wallet {
                 );
 
             /**
-             * Create worker intermediate based on specified post, for specified worker techspec
-             *
-             * @param author author of the post
-             * @param permlink permlink of the post
-             * @param worker_techspec_permlink techspec for which intermediate is creating
-             * @param broadcast true if you wish to broadcast the transaction
-             */
-            annotated_signed_transaction worker_intermediate(
-                const std::string& author, const std::string& permlink, const std::string& worker_techspec_permlink,
-                bool broadcast
-                );
-
-            /**
-             * Delete worker intermediate based on specified post
-             *
-             * @param author author of the post
-             * @param permlink permlink of the post
-             * @param broadcast true if you wish to broadcast the transaction
-             */
-            annotated_signed_transaction delete_worker_intermediate(
-                const std::string& author, const std::string& permlink, bool broadcast
-                );
-
-            /**
              * Assign worker to worker techspec based on specified post, or unassign it
              *
              * @param assigner worker or worker techspec author
@@ -1679,8 +1655,6 @@ FC_API( golos::wallet::wallet_api,
                 (worker_techspec)
                 (delete_worker_techspec)
                 (approve_worker_techspec)
-                (worker_intermediate)
-                (delete_worker_intermediate)
                 (assign_worker)
                 (worker_result)
                 (delete_worker_result)

@@ -177,23 +177,4 @@ DEFINE_API(worker_api_plugin, get_worker_techspecs) {
     return result;
 }
 
-DEFINE_API(worker_api_plugin, get_worker_intermediates) {
-    PLUGIN_API_VALIDATE_ARGS(
-        (worker_intermediate_query, query)
-        (bool, fill_posts)
-    )
-    std::vector<worker_intermediate_api_object> result;
-
-    auto wio_selector = [&](const worker_intermediate_query& query, const worker_intermediate_object& wio) -> bool {
-        if (!query.is_good_worker_techspec(wio.author, to_string(wio.worker_techspec_permlink))) {
-            return false;
-        }
-        return true;
-    };
-
-    my->select_postbased_results_ordered<worker_intermediate_index, by_id, true>(query, result, wio_selector, fill_posts);
-
-    return result;
-}
-
 } } } // golos::plugins::worker_api

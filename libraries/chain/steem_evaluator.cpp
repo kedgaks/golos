@@ -387,11 +387,6 @@ namespace golos { namespace chain {
                     logic_exception::cannot_delete_post_with_worker_techspec,
                     "Cannot delete a post with worker techspec.");
 
-                const auto* wio_result = _db.find_worker_intermediate(o.author, o.permlink);
-                GOLOS_CHECK_LOGIC(!wio_result,
-                    logic_exception::cannot_delete_post_with_worker_intermediate,
-                    "Cannot delete a post with worker intermediate.");
-
                 const auto* wto_result = _db.find_worker_result(o.author, o.permlink);
                 GOLOS_CHECK_LOGIC(!wto_result,
                     logic_exception::cannot_delete_post_with_worker_result,
