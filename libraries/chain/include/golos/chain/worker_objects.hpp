@@ -124,6 +124,7 @@ namespace golos { namespace chain {
     struct by_worker_result;
     struct by_next_cashout_time;
     struct by_net_rshares;
+    struct by_created;
     struct by_approves;
     struct by_disapproves;
 
@@ -161,6 +162,12 @@ namespace golos { namespace chain {
                 composite_key<
                     worker_techspec_object,
                     member<worker_techspec_object, time_point_sec, &worker_techspec_object::next_cashout_time>,
+                    member<worker_techspec_object, worker_techspec_object_id_type, &worker_techspec_object::id>>>,
+            ordered_unique<
+                tag<by_created>,
+                composite_key<
+                    worker_techspec_object,
+                    member<worker_techspec_object, time_point_sec, &worker_techspec_object::created>,
                     member<worker_techspec_object, worker_techspec_object_id_type, &worker_techspec_object::id>>>,
             ordered_unique<
                 tag<by_net_rshares>,
