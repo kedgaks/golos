@@ -313,15 +313,9 @@ namespace golos { namespace chain {
         const auto& wpo_post = _db.get_comment(wto.worker_proposal_author, wto.worker_proposal_permlink);
         const auto& wpo = _db.get_worker_proposal(wpo_post.id);
 
-        if (o.state == worker_techspec_approve_state::disapprove) {
-            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::work || wpo.state == worker_proposal_state::witnesses_review,
-                logic_exception::worker_proposal_should_be_in_work_or_review_state_to_disapprove,
-                "Worker proposal should be in work or review state to disapprove");
-        } else if (o.state == worker_techspec_approve_state::approve) {
-            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::witnesses_review,
-                logic_exception::worker_proposal_should_be_in_review_state_to_approve,
-                "Worker proposal should be in review state to approve");
-        }
+        GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::witnesses_review,
+            logic_exception::worker_proposal_should_be_in_review_state_to_approve,
+            "Worker proposal should be in review state to approve");
 
         const auto& mprops = _db.get_witness_schedule_object().median_props;
         GOLOS_CHECK_LOGIC(_db.head_block_time() <= wto.completion_date + mprops.worker_result_approve_term_sec,
@@ -368,11 +362,18 @@ namespace golos { namespace chain {
         if (o.state == worker_techspec_approve_state::disapprove) {
             auto disapprovers = count_approvers(worker_techspec_approve_state::disapprove);
 
-            if (disapprovers >= STEEMIT_SUPER_MAJOR_VOTED_WITNESSES) {
-                _db.modify(wpo, [&](worker_proposal_object& wpo) {
-                    wpo.state = worker_proposal_state::closed;
-                });
+            if (disapprovers < STEEMIT_SUPER_MAJOR_VOTED_WITNESSES) {
+                return;
             }
+
+            _db.modify(wpo, [&](worker_proposal_object& wpo) {
+                if (wpo.type == worker_proposal_type::premade_work) {
+                    wpo.state = worker_proposal_state::created;
+                    return;
+                }
+
+                wpo.state = worker_proposal_state::work;
+            });
         } else if (o.state == worker_techspec_approve_state::approve) {
             auto month_sec = fc::days(30).to_seconds();
             auto payments_period = int64_t(wto.payments_interval) * wto.payments_count;
@@ -396,21 +397,23 @@ namespace golos { namespace chain {
 
             auto approvers = count_approvers(worker_techspec_approve_state::approve);
 
-            if (approvers >= STEEMIT_MAJOR_VOTED_WITNESSES) {
-                _db.modify(wpo, [&](worker_proposal_object& wpo) {
-                    wpo.state = worker_proposal_state::payment;
-                });
-
-                _db.modify(wto, [&](worker_techspec_object& wto) {
-                    wto.month_consumption = consumption;
-                    wto.next_cashout_time = _db.head_block_time() + wto.payments_interval;
-                    wto.payment_beginning_time = wto.next_cashout_time;
-                });
-
-                _db.modify(gpo, [&](dynamic_global_property_object& gpo) {
-                    gpo.worker_consumption_per_month += consumption;
-                });
+            if (approvers < STEEMIT_MAJOR_VOTED_WITNESSES) {
+                return;
             }
+
+            _db.modify(wpo, [&](worker_proposal_object& wpo) {
+                wpo.state = worker_proposal_state::payment;
+            });
+
+            _db.modify(wto, [&](worker_techspec_object& wto) {
+                wto.month_consumption = consumption;
+                wto.next_cashout_time = _db.head_block_time() + wto.payments_interval;
+                wto.payment_beginning_time = wto.next_cashout_time;
+            });
+
+            _db.modify(gpo, [&](dynamic_global_property_object& gpo) {
+                gpo.worker_consumption_per_month += consumption;
+            });
         }
     }
 
