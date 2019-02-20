@@ -16,8 +16,6 @@ namespace golos { namespace chain {
             logic_exception::worker_proposal_can_be_created_only_on_post,
             "Worker proposal can be created only on post");
 
-        const auto now = _db.head_block_time();
-
         const auto* wpo = _db.find_worker_proposal(post.id);
 
         if (wpo) {
@@ -27,7 +25,6 @@ namespace golos { namespace chain {
 
             _db.modify(*wpo, [&](worker_proposal_object& wpo) {
                 wpo.type = o.type;
-                wpo.modified = now;
             });
             return;
         }
@@ -37,8 +34,6 @@ namespace golos { namespace chain {
             wpo.post = post.id;
             wpo.type = o.type;
             wpo.state = worker_proposal_state::created;
-            wpo.created = now;
-            wpo.net_rshares = post.net_rshares;
         });
     }
 
