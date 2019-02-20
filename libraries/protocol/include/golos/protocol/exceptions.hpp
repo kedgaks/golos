@@ -364,6 +364,9 @@ namespace golos {
             worker_can_be_unassigned_only_by_techspec_author_or_himself,
             insufficient_funds_to_approve_worker_result,
             approve_term_has_expired,
+            approver_of_payment_should_be_in_top19_of_witnesses,
+            payment_does_not_need_approving_it_can_be_only_disapproved,
+            worker_techspec_should_be_in_payment_state,
 
             // custom operations
             inner_authorities_does_not_match_outer,
@@ -661,6 +664,9 @@ FC_REFLECT_ENUM(golos::logic_exception::error_types,
         (worker_can_be_unassigned_only_by_techspec_author_or_himself)
         (insufficient_funds_to_approve_worker_result)
         (approve_term_has_expired)
+        (approver_of_payment_should_be_in_top19_of_witnesses)
+        (payment_does_not_need_approving_it_can_be_only_disapproved)
+        (worker_techspec_should_be_in_payment_state)
 
         // custom operations
         (inner_authorities_does_not_match_outer)
