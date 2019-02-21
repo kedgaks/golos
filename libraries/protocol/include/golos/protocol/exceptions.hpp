@@ -356,7 +356,6 @@ namespace golos {
             cannot_delete_worker_result_for_paying_proposal,
             this_post_already_used_as_worker_result,
             approver_of_result_should_be_in_top19_of_witnesses,
-            worker_proposal_should_be_in_work_or_review_state_to_disapprove,
             worker_proposal_should_be_in_review_state_to_approve,
             worker_techspec_already_has_final_result,
             worker_can_be_assigned_only_to_proposal_with_approved_techspec,
@@ -654,7 +653,6 @@ FC_REFLECT_ENUM(golos::logic_exception::error_types,
         (cannot_delete_worker_result_for_paying_proposal)
         (this_post_already_used_as_worker_result)
         (approver_of_result_should_be_in_top19_of_witnesses)
-        (worker_proposal_should_be_in_work_or_review_state_to_disapprove)
         (worker_proposal_should_be_in_review_state_to_approve)
         (worker_techspec_already_has_final_result)
         (worker_can_be_assigned_only_to_proposal_with_approved_techspec)
