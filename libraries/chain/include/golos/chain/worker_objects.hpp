@@ -6,11 +6,7 @@ namespace golos { namespace chain {
 
     enum class worker_proposal_state {
         created,
-        techspec,
-        work,
-        witnesses_review,
-        payment,
-        closed
+        techspec
     };
 
     class worker_proposal_object : public object<worker_proposal_object_type, worker_proposal_object> {
@@ -36,6 +32,10 @@ namespace golos { namespace chain {
     enum class worker_techspec_state {
         created,
         approved,
+        work,
+        complete,
+        payment,
+        payment_complete,
         closed
     };
 
@@ -238,13 +238,13 @@ namespace golos { namespace chain {
 
 } } // golos::chain
 
-FC_REFLECT_ENUM(golos::chain::worker_proposal_state, (created)(techspec)(work)(witnesses_review)(payment)(closed))
+FC_REFLECT_ENUM(golos::chain::worker_proposal_state, (created)(techspec))
 
 CHAINBASE_SET_INDEX_TYPE(
     golos::chain::worker_proposal_object,
     golos::chain::worker_proposal_index);
 
-FC_REFLECT_ENUM(golos::chain::worker_techspec_state, (created)(approved)(closed))
+FC_REFLECT_ENUM(golos::chain::worker_techspec_state, (created)(approved)(work)(complete)(payment)(payment_complete)(closed))
 
 CHAINBASE_SET_INDEX_TYPE(
     golos::chain::worker_techspec_object,

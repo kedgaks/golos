@@ -125,14 +125,13 @@ namespace golos { namespace chain {
         const auto& post = _db.get_comment(o.author, o.permlink);
         const auto& wto = _db.get_worker_techspec(post.id);
 
-        const auto& wpo_post = _db.get_comment(wto.worker_proposal_author, wto.worker_proposal_permlink);
-        const auto& wpo = _db.get_worker_proposal(wpo_post.id);
-
-        GOLOS_CHECK_LOGIC(wpo.state < worker_proposal_state::payment,
-            logic_exception::cannot_delete_worker_techspec_for_paying_proposal,
-            "Cannot delete worker techspec for paying proposal");
+        GOLOS_CHECK_LOGIC(wto.state < worker_techspec_state::payment,
+            logic_exception::cannot_delete_paying_worker_techspec,
+            "Cannot delete paying worker techspec");
 
         if (wto.state == worker_techspec_state::approved) {
+            const auto& wpo_post = _db.get_comment(wto.worker_proposal_author, wto.worker_proposal_permlink);
+            const auto& wpo = _db.get_worker_proposal(wpo_post.id);
             _db.modify(wpo, [&](worker_proposal_object& wpo) {
                 wpo.state = worker_proposal_state::created;
             });
@@ -151,6 +150,13 @@ namespace golos { namespace chain {
 
         const auto& wto_post = _db.get_comment(o.author, o.permlink);
         const auto& wto = _db.get_worker_techspec(wto_post.id);
+
+        const auto& wpo_post = _db.get_comment(wto.worker_proposal_author, wto.worker_proposal_permlink);
+        const auto& wpo = _db.get_worker_proposal(wpo_post.id);
+
+        GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::created,
+            logic_exception::this_worker_proposal_already_has_approved_techspec,
+            "This worker proposal already has approved techspec");
 
         GOLOS_CHECK_LOGIC(wto.state == worker_techspec_state::created,
             logic_exception::techspec_is_already_approved_or_closed,
@@ -206,9 +212,6 @@ namespace golos { namespace chain {
 
             _db.clear_worker_techspec_approves(wto);
 
-            const auto& wpo_post = _db.get_comment(wto.worker_proposal_author, wto.worker_proposal_permlink);
-            const auto& wpo = _db.get_worker_proposal(wpo_post.id);
-
             _db.modify(wpo, [&](worker_proposal_object& wpo) {
                 wpo.approved_techspec_author = o.author;
                 from_string(wpo.approved_techspec_permlink, o.permlink);
@@ -249,15 +252,12 @@ namespace golos { namespace chain {
         const auto& wpo_post = _db.get_comment(wto.worker_proposal_author, wto.worker_proposal_permlink);
         const auto& wpo = _db.get_worker_proposal(wpo_post.id);
 
-        GOLOS_CHECK_LOGIC(wto.state == worker_techspec_state::approved,
-            logic_exception::worker_result_can_be_created_only_for_techspec_in_work,
-            "Worker result can be created only for techspec in work");
         if (wpo.type == worker_proposal_type::premade_work) {
-            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::techspec,
+            GOLOS_CHECK_LOGIC(wto.state == worker_techspec_state::approved,
                 logic_exception::worker_result_can_be_created_only_for_techspec_in_work,
                 "Worker result can be created only for techspec in work");
         } else {
-            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::work,
+            GOLOS_CHECK_LOGIC(wto.state == worker_techspec_state::work,
                 logic_exception::worker_result_can_be_created_only_for_techspec_in_work,
                 "Worker result can be created only for techspec in work");
         }
@@ -270,10 +270,8 @@ namespace golos { namespace chain {
             } else {
                 wto.completion_date = now;
             }
-        });
 
-        _db.modify(wpo, [&](worker_proposal_object& wpo) {
-            wpo.state = worker_proposal_state::witnesses_review;
+            wto.state = worker_techspec_state::complete;
         });
     }
 
@@ -282,20 +280,14 @@ namespace golos { namespace chain {
 
         const auto& wto = _db.get_worker_result(o.author, o.permlink);
 
-        const auto& wpo_post = _db.get_comment(wto.worker_proposal_author, wto.worker_proposal_permlink);
-        const auto& wpo = _db.get_worker_proposal(wpo_post.id);
-
-        GOLOS_CHECK_LOGIC(wpo.state < worker_proposal_state::payment,
-            logic_exception::cannot_delete_worker_result_for_paying_proposal,
-            "Cannot delete worker result for paying proposal");
-
-        _db.modify(wpo, [&](worker_proposal_object& wpo) {
-            wpo.state = worker_proposal_state::work;
-        });
+        GOLOS_CHECK_LOGIC(wto.state < worker_techspec_state::payment,
+            logic_exception::cannot_delete_worker_result_for_paying_techspec,
+            "Cannot delete worker result for paying techspec");
 
         _db.modify(wto, [&](worker_techspec_object& wto) {
             wto.worker_result_permlink.clear();
             wto.completion_date = time_point::min();
+            wto.state = worker_techspec_state::work;
         });
     }
 
@@ -313,9 +305,9 @@ namespace golos { namespace chain {
         const auto& wpo_post = _db.get_comment(wto.worker_proposal_author, wto.worker_proposal_permlink);
         const auto& wpo = _db.get_worker_proposal(wpo_post.id);
 
-        GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::witnesses_review,
-            logic_exception::worker_proposal_should_be_in_review_state_to_approve,
-            "Worker proposal should be in review state to approve");
+        GOLOS_CHECK_LOGIC(wto.state == worker_techspec_state::complete,
+            logic_exception::worker_techspec_should_be_complete_to_approve_result,
+            "Worker techspec should be complete to approve result");
 
         const auto& mprops = _db.get_witness_schedule_object().median_props;
         GOLOS_CHECK_LOGIC(_db.head_block_time() <= wto.completion_date + mprops.worker_result_approve_term_sec,
@@ -366,13 +358,21 @@ namespace golos { namespace chain {
                 return;
             }
 
-            _db.modify(wpo, [&](worker_proposal_object& wpo) {
-                if (wpo.type == worker_proposal_type::premade_work) {
-                    wpo.state = worker_proposal_state::created;
-                    return;
-                }
 
-                wpo.state = worker_proposal_state::work;
+            if (wpo.type == worker_proposal_type::premade_work) {
+                _db.modify(wto, [&](worker_techspec_object& wto) {
+                    wto.state = worker_techspec_state::created;
+                });
+
+                _db.modify(wpo, [&](worker_proposal_object& wpo) {
+                    wpo.state = worker_proposal_state::created;
+                });
+
+                return;
+            }
+
+            _db.modify(wto, [&](worker_techspec_object& wto) {
+                wto.state = worker_techspec_state::work;
             });
         } else if (o.state == worker_techspec_approve_state::approve) {
             auto month_sec = fc::days(30).to_seconds();
@@ -401,14 +401,11 @@ namespace golos { namespace chain {
                 return;
             }
 
-            _db.modify(wpo, [&](worker_proposal_object& wpo) {
-                wpo.state = worker_proposal_state::payment;
-            });
-
             _db.modify(wto, [&](worker_techspec_object& wto) {
                 wto.month_consumption = consumption;
                 wto.next_cashout_time = _db.head_block_time() + wto.payments_interval;
                 wto.payment_beginning_time = wto.next_cashout_time;
+                wto.state = worker_techspec_state::payment;
             });
 
             _db.modify(gpo, [&](dynamic_global_property_object& gpo) {
@@ -425,11 +422,8 @@ namespace golos { namespace chain {
         const auto& wto_post = _db.get_comment(o.worker_techspec_author, o.worker_techspec_permlink);
         const auto& wto = _db.get_worker_techspec(wto_post.id);
 
-        const auto& wpo_post = _db.get_comment(wto.worker_proposal_author, wto.worker_proposal_permlink);
-        const auto& wpo = _db.get_worker_proposal(wpo_post.id);
-
         if (!o.worker.size()) { // Unassign worker
-            GOLOS_CHECK_LOGIC(wpo.state == worker_proposal_state::work,
+            GOLOS_CHECK_LOGIC(wto.state == worker_techspec_state::work,
                 logic_exception::cannot_unassign_worker_from_finished_or_not_started_work,
                 "Cannot unassign worker from finished or not started work");
 
@@ -437,33 +431,29 @@ namespace golos { namespace chain {
                 logic_exception::worker_can_be_unassigned_only_by_techspec_author_or_himself,
                 "Worker can be unassigned only by techspec author or himself");
 
-            _db.modify(wpo, [&](worker_proposal_object& wpo) {
-                wpo.state = worker_proposal_state::techspec;
-            });
-
             _db.modify(wto, [&](worker_techspec_object& wto) {
                 wto.worker = account_name_type();
                 wto.work_beginning_time = time_point_sec::min();
+                wto.state = worker_techspec_state::approved;
             });
 
             return;
         }
 
-        GOLOS_CHECK_LOGIC(wto.state == worker_techspec_state::approved && wpo.state == worker_proposal_state::techspec,
+        GOLOS_CHECK_LOGIC(wto.state == worker_techspec_state::approved,
             logic_exception::worker_can_be_assigned_only_to_proposal_with_approved_techspec,
             "Worker can be assigned only to proposal with approved techspec");
 
+        const auto& wpo_post = _db.get_comment(wto.worker_proposal_author, wto.worker_proposal_permlink);
+        const auto& wpo = _db.get_worker_proposal(wpo_post.id);
         GOLOS_CHECK_LOGIC(wpo.type == worker_proposal_type::task,
             logic_exception::worker_cannot_be_assigned_to_premade_proposal,
             "Worker cannot be assigned to premade proposal");
 
-        _db.modify(wpo, [&](worker_proposal_object& wpo) {
-            wpo.state = worker_proposal_state::work;
-        });
-
         _db.modify(wto, [&](worker_techspec_object& wto) {
             wto.worker = o.worker;
             wto.work_beginning_time = _db.head_block_time();
+            wto.state = worker_techspec_state::work;
         });
     }
 
