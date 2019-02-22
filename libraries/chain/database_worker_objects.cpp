@@ -87,12 +87,6 @@ namespace golos { namespace chain {
             }
 
             if (remaining_payments_count == 1) {
-                const auto& wpo_post = get_comment(wto_itr->worker_proposal_author, wto_itr->worker_proposal_permlink);
-                const auto& wpo = get_worker_proposal(wpo_post.id);
-                modify(wpo, [&](worker_proposal_object& wpo) {
-                    wpo.state = worker_proposal_state::closed;
-                });
-
                 modify(gpo, [&](dynamic_global_property_object& gpo) {
                     gpo.worker_consumption_per_month -= wto_itr->month_consumption;
                 });
@@ -101,6 +95,7 @@ namespace golos { namespace chain {
                     wto.finished_payments_count++;
                     wto.next_cashout_time = time_point_sec::maximum();
                     wto.month_consumption = asset(0, STEEM_SYMBOL);
+                    wto.state = worker_techspec_state::payment_complete;
                 });
             } else {
                 modify(*wto_itr, [&](worker_techspec_object& wto) {

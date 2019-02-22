@@ -347,16 +347,16 @@ namespace golos {
             this_worker_proposal_already_has_approved_techspec,
             there_already_is_your_techspec_with_another_permlink,
             cannot_change_cost_symbol,
-            cannot_delete_worker_techspec_for_paying_proposal,
+            cannot_delete_paying_worker_techspec,
             approver_of_techspec_should_be_in_top19_of_witnesses,
             techspec_is_already_approved_or_closed,
             work_completion_date_cannot_be_in_future,
             worker_result_can_be_created_only_on_post,
             worker_result_can_be_created_only_for_techspec_in_work,
-            cannot_delete_worker_result_for_paying_proposal,
+            cannot_delete_worker_result_for_paying_techspec,
             this_post_already_used_as_worker_result,
             approver_of_result_should_be_in_top19_of_witnesses,
-            worker_proposal_should_be_in_review_state_to_approve,
+            worker_techspec_should_be_complete_to_approve_result,
             worker_techspec_already_has_final_result,
             worker_can_be_assigned_only_to_proposal_with_approved_techspec,
             worker_cannot_be_assigned_to_premade_proposal,
@@ -644,16 +644,16 @@ FC_REFLECT_ENUM(golos::logic_exception::error_types,
         (this_worker_proposal_already_has_approved_techspec)
         (there_already_is_your_techspec_with_another_permlink)
         (cannot_change_cost_symbol)
-        (cannot_delete_worker_techspec_for_paying_proposal)
+        (cannot_delete_paying_worker_techspec)
         (approver_of_techspec_should_be_in_top19_of_witnesses)
         (techspec_is_already_approved_or_closed)
         (work_completion_date_cannot_be_in_future)
         (worker_result_can_be_created_only_on_post)
         (worker_result_can_be_created_only_for_techspec_in_work)
-        (cannot_delete_worker_result_for_paying_proposal)
+        (cannot_delete_worker_result_for_paying_techspec)
         (this_post_already_used_as_worker_result)
         (approver_of_result_should_be_in_top19_of_witnesses)
-        (worker_proposal_should_be_in_review_state_to_approve)
+        (worker_techspec_should_be_complete_to_approve_result)
         (worker_techspec_already_has_final_result)
         (worker_can_be_assigned_only_to_proposal_with_approved_techspec)
         (worker_cannot_be_assigned_to_premade_proposal)
