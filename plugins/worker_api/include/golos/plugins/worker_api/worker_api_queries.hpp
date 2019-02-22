@@ -58,6 +58,10 @@ namespace golos { namespace plugins { namespace worker_api {
             return select_states.empty() || select_states.count(state);
         }
 
+        bool has_worker_proposal() const {
+            return !!worker_proposal_author;
+        }
+
         bool is_good_worker_proposal(const std::string& author, const std::string& permlink) const {
             return !worker_proposal_author
                 || (worker_proposal_author == author && worker_proposal_permlink == permlink);
