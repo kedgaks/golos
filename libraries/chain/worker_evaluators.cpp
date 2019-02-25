@@ -447,10 +447,6 @@ namespace golos { namespace chain {
             logic_exception::approver_of_payment_should_be_in_top19_of_witnesses,
             "Approver of payment should be in Top 19 of witnesses");
 
-        GOLOS_CHECK_LOGIC(o.state != worker_techspec_approve_state::approve,
-            logic_exception::payment_does_not_need_approving_it_can_be_only_disapproved,
-            "Payment does not need approving, it can be only disapproved");
-
         const auto& wro_post = _db.get_comment(o.worker_result_author, o.worker_result_permlink);
         const auto& wto = _db.get_worker_result(o.worker_result_author, o.worker_result_permlink);
 
@@ -461,7 +457,7 @@ namespace golos { namespace chain {
         const auto& wpao_idx = _db.get_index<worker_payment_approve_index, by_result_approver>();
         auto wpao_itr = wpao_idx.find(std::make_tuple(wro_post.id, o.approver));
 
-        if (o.state == worker_techspec_approve_state::abstain) {
+        if (o.state != worker_techspec_approve_state::disapprove) {
             if (wpao_itr != wpao_idx.end()) {
                 _db.remove(*wpao_itr);
             }
@@ -470,16 +466,14 @@ namespace golos { namespace chain {
         }
 
         if (wpao_itr != wpao_idx.end()) {
-            _db.modify(*wpao_itr, [&](worker_payment_approve_object& wpao) {
-                wpao.state = o.state;
-            });
-        } else {
-            _db.create<worker_payment_approve_object>([&](worker_payment_approve_object& wpao) {
-                wpao.approver = o.approver;
-                wpao.post = wro_post.id;
-                wpao.state = o.state;
-            });
+            return;
         }
+
+        _db.create<worker_payment_approve_object>([&](worker_payment_approve_object& wpao) {
+            wpao.approver = o.approver;
+            wpao.post = wro_post.id;
+            wpao.state = o.state;
+        });
 
         auto disapprovers = count_worker_approves(_db, wpao_idx, wro_post.id, worker_techspec_approve_state::disapprove);
 
