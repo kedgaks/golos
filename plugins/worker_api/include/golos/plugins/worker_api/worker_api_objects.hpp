@@ -28,7 +28,6 @@ namespace golos { namespace plugins { namespace worker_api {
 
         id_type id;
 
-        account_name_type author;
         comment_id_type post;
         time_point_sec created;
         time_point_sec modified;
@@ -46,7 +45,6 @@ namespace golos { namespace plugins { namespace worker_api {
 
         id_type id;
 
-        account_name_type author;
         comment_id_type post;
         time_point_sec modified;
         share_type net_rshares;

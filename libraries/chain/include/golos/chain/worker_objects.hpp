@@ -20,7 +20,6 @@ namespace golos { namespace chain {
 
         id_type id;
 
-        account_name_type author;
         comment_id_type post;
         worker_proposal_type type;
         worker_proposal_state state;
@@ -48,7 +47,6 @@ namespace golos { namespace chain {
 
         id_type id;
 
-        account_name_type author;
         comment_id_type post;
         comment_id_type worker_proposal_post;
         worker_techspec_state state;
@@ -123,15 +121,9 @@ namespace golos { namespace chain {
             ordered_unique<
                 tag<by_post>,
                 member<worker_techspec_object, comment_id_type, &worker_techspec_object::post>>,
-            ordered_non_unique<
+            ordered_unique<
                 tag<by_worker_proposal>,
-                composite_key<
-                    worker_techspec_object,
-                    member<worker_techspec_object, comment_id_type, &worker_techspec_object::worker_proposal_post>,
-                    member<worker_techspec_object, account_name_type, &worker_techspec_object::author>>,
-                composite_key_compare<
-                    std::less<comment_id_type>,
-                    std::less<account_name_type>>>,
+                member<worker_techspec_object, comment_id_type, &worker_techspec_object::worker_proposal_post>>,
             ordered_unique<
                 tag<by_worker_result>,
                 member<worker_techspec_object, comment_id_type, &worker_techspec_object::worker_result_post>>,

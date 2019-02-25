@@ -22,8 +22,12 @@ namespace golos { namespace plugins { namespace worker_api {
             return !!start_author;
         }
 
+        bool has_author() const {
+            return !select_authors.empty();
+        }
+
         bool is_good_author(const std::string& author) const {
-            return select_authors.empty() || select_authors.count(author);
+            return !has_author() || select_authors.count(author);
         }
 
         bool is_good_state(const worker_proposal_state& state) const {
@@ -50,8 +54,12 @@ namespace golos { namespace plugins { namespace worker_api {
             return !!start_author;
         }
 
+        bool has_author() const {
+            return !select_authors.empty();
+        }
+
         bool is_good_author(const std::string& author) const {
-            return select_authors.empty() || select_authors.count(author);
+            return !has_author() || select_authors.count(author);
         }
 
         bool is_good_state(const worker_techspec_state& state) const {
@@ -63,8 +71,7 @@ namespace golos { namespace plugins { namespace worker_api {
         }
 
         bool is_good_worker_proposal(const std::string& author, const std::string& permlink) const {
-            return !worker_proposal_author
-                || (worker_proposal_author == author && worker_proposal_permlink == permlink);
+            return !has_worker_proposal() || (worker_proposal_author == author && worker_proposal_permlink == permlink);
         }
     };
 

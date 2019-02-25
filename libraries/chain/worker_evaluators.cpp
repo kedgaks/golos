@@ -30,7 +30,6 @@ namespace golos { namespace chain {
         }
 
         _db.create<worker_proposal_object>([&](worker_proposal_object& wpo) {
-            wpo.author = o.author;
             wpo.post = post.id;
             wpo.type = o.type;
             wpo.state = worker_proposal_state::created;
@@ -79,10 +78,18 @@ namespace golos { namespace chain {
             logic_exception::this_worker_proposal_already_has_approved_techspec,
             "This worker proposal already has approved techspec");
 
+        const comment_object* wto_post = nullptr;
         const auto& wto_idx = _db.get_index<worker_techspec_index, by_worker_proposal>();
-        auto wto_itr = wto_idx.find(std::make_tuple(wpo->post, o.author));
-        if (wto_itr != wto_idx.end()) {
-            GOLOS_CHECK_LOGIC(o.permlink == to_string(post.permlink),
+        auto wto_itr = wto_idx.find(wpo->post);
+        for (; wto_itr != wto_idx.end(); wto_itr++) {
+            wto_post = &_db.get_comment(wto_itr->post);
+            if (wto_post->author == o.author) {
+                break;
+            }
+            wto_post = nullptr;
+        }
+        if (wto_post) {
+            GOLOS_CHECK_LOGIC(o.permlink == to_string(wto_post->permlink),
                 logic_exception::there_already_is_your_techspec_with_another_permlink,
                 "There already is your techspec with another permlink");
 
@@ -104,7 +111,6 @@ namespace golos { namespace chain {
         }
 
         _db.create<worker_techspec_object>([&](worker_techspec_object& wto) {
-            wto.author = o.author;
             wto.post = post.id;
             wto.worker_proposal_post = wpo->post;
             wto.state = worker_techspec_state::created;
@@ -419,7 +425,7 @@ namespace golos { namespace chain {
                 logic_exception::cannot_unassign_worker_from_finished_or_not_started_work,
                 "Cannot unassign worker from finished or not started work");
 
-            GOLOS_CHECK_LOGIC(o.assigner == wto.worker || o.assigner == wto.author,
+            GOLOS_CHECK_LOGIC(o.assigner == wto.worker || o.assigner == wto_post.author,
                 logic_exception::worker_can_be_unassigned_only_by_techspec_author_or_himself,
                 "Worker can be unassigned only by techspec author or himself");
 

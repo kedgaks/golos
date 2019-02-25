@@ -96,12 +96,13 @@ namespace golos { namespace chain {
                 gpo.total_worker_fund_steem -= (author_reward + worker_reward);
             });
 
-            adjust_balance(get_account(wto_itr->author), author_reward);
+            const auto& wto_post = get_comment(wto_itr->post);
+
+            adjust_balance(get_account(wto_post.author), author_reward);
             adjust_balance(get_account(wto_itr->worker), worker_reward);
 
-            const auto& wto_post = get_comment(wto_itr->post);
-            push_virtual_operation(techspec_reward_operation(wto_itr->author, to_string(wto_post.permlink), author_reward));
-            push_virtual_operation(worker_reward_operation(wto_itr->worker, wto_itr->author, to_string(wto_post.permlink), worker_reward));
+            push_virtual_operation(techspec_reward_operation(wto_post.author, to_string(wto_post.permlink), author_reward));
+            push_virtual_operation(worker_reward_operation(wto_itr->worker, wto_post.author, to_string(wto_post.permlink), worker_reward));
         }
     }
 
