@@ -364,6 +364,11 @@ namespace golos {
             worker_can_be_unassigned_only_by_techspec_author_or_himself,
             insufficient_funds_to_approve_worker_result,
             approve_term_has_expired,
+            cannot_create_techspec_for_premade_worker_proposal,
+            only_premade_worker_result_can_be_created_for_premade_worker_proposal,
+            this_post_already_used_as_worker_techspec,
+            premade_result_can_be_created_only_for_premade_work_proposal,
+            this_worker_proposal_already_has_approved_result,
 
             // custom operations
             inner_authorities_does_not_match_outer,
@@ -661,6 +666,11 @@ FC_REFLECT_ENUM(golos::logic_exception::error_types,
         (worker_can_be_unassigned_only_by_techspec_author_or_himself)
         (insufficient_funds_to_approve_worker_result)
         (approve_term_has_expired)
+        (cannot_create_techspec_for_premade_worker_proposal)
+        (only_premade_worker_result_can_be_created_for_premade_worker_proposal)
+        (this_post_already_used_as_worker_techspec)
+        (premade_result_can_be_created_only_for_premade_work_proposal)
+        (this_worker_proposal_already_has_approved_result)
 
         // custom operations
         (inner_authorities_does_not_match_outer)
