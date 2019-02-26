@@ -350,6 +350,7 @@ namespace golos { namespace chain {
                 return;
             }
 
+            _db.clear_worker_result_approves(wto);
 
             if (wpo.type == worker_proposal_type::premade_work) {
                 _db.modify(wto, [&](worker_techspec_object& wto) {
@@ -388,6 +389,8 @@ namespace golos { namespace chain {
             if (approvers < STEEMIT_MAJOR_VOTED_WITNESSES) {
                 return;
             }
+
+            _db.clear_worker_result_approves(wto);
 
             _db.modify(wto, [&](worker_techspec_object& wto) {
                 wto.next_cashout_time = _db.head_block_time() + wto.payments_interval;

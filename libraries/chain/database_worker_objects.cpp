@@ -144,6 +144,24 @@ namespace golos { namespace chain {
         }
     }
 
+    void database::set_clear_old_worker_result_approves(bool clear_old_worker_result_approves) {
+        _clear_old_worker_result_approves = clear_old_worker_result_approves;
+    }
+
+    void database::clear_worker_result_approves(const worker_techspec_object& wto) {
+        if (!_clear_old_worker_result_approves) {
+            return;
+        }
+
+        const auto& wrao_idx = get_index<worker_result_approve_index, by_result_approver>();
+        auto wrao_itr = wrao_idx.lower_bound(wto.post); // TODO: Change to worker result post after #1105 merge
+        while (wrao_itr != wrao_idx.end() && wrao_itr->post == wto.post) { // TODO: Change to worker result post after #1105 merge
+            const auto& wrao = *wrao_itr;
+            ++wrao_itr;
+            remove(wrao);
+        }
+    }
+
     void database::clear_expired_worker_objects() {
         if (!has_hardfork(STEEMIT_HARDFORK_0_21__1013)) {
             return;
