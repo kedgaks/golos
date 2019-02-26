@@ -7,6 +7,11 @@
 
 namespace golos { namespace chain {
 
+#define WORKER_CHECK_OR_THROW_VOTE_REPEAT(expr) \
+    GOLOS_CHECK_LOGIC(expr, \
+        logic_exception::you_already_have_voted_for_this_object_with_this_state, \
+        "You already have voted for this object with this state")
+
     void worker_proposal_evaluator::do_apply(const worker_proposal_operation& o) {
         ASSERT_REQ_HF(STEEMIT_HARDFORK_0_21__1013, "worker_proposal_operation");
 
@@ -172,6 +177,8 @@ namespace golos { namespace chain {
         }
 
         if (wtao_itr != wtao_idx.end()) {
+            WORKER_CHECK_OR_THROW_VOTE_REPEAT(o.state != wtao_itr->state);
+
             _db.modify(*wtao_itr, [&](worker_techspec_approve_object& wtao) {
                 wtao.state = o.state;
             });
@@ -203,6 +210,16 @@ namespace golos { namespace chain {
             }
 
             _db.clear_worker_techspec_approves(wto);
+
+            _db.modify(wto, [&](worker_techspec_object& wto) {
+                wto.state = worker_techspec_state::closed;
+            });
+        } else if (o.state == worker_techspec_approve_state::approve) {
+            auto approvers = count_approvers(worker_techspec_approve_state::approve);
+
+            if (approvers < STEEMIT_MAJOR_VOTED_WITNESSES) {
+                return;
+            }
 
             _db.modify(wpo, [&](worker_proposal_object& wpo) {
                 wpo.approved_techspec_author = o.author;
@@ -318,6 +335,8 @@ namespace golos { namespace chain {
         }
 
         if (wrao_itr != wrao_idx.end()) {
+            WORKER_CHECK_OR_THROW_VOTE_REPEAT(o.state != wrao_itr->state);
+
             _db.modify(*wrao_itr, [&](worker_result_approve_object& wrao) {
                 wrao.state = o.state;
             });
@@ -349,7 +368,6 @@ namespace golos { namespace chain {
             if (disapprovers < STEEMIT_SUPER_MAJOR_VOTED_WITNESSES) {
                 return;
             }
-
 
             if (wpo.type == worker_proposal_type::premade_work) {
                 _db.modify(wto, [&](worker_techspec_object& wto) {

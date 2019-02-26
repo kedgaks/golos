@@ -47,23 +47,24 @@ struct post_operation_visitor {
     post_operation_visitor(golos::chain::database& db, worker_api_plugin& plugin) : _db(db), _plugin(plugin) {
     }
 
-    void update_worker_techspec_approves(const worker_techspec_metadata_object& wtmo,
+    template<typename WorkerMetadataObject>
+    void update_worker_object_approves(const WorkerMetadataObject& wmo,
             worker_techspec_approve_state old_state, worker_techspec_approve_state new_state) const {
         if (old_state == new_state) {
             return;
         }
-        _db.modify(wtmo, [&](worker_techspec_metadata_object& wtmo) {
+        _db.modify(wmo, [&](WorkerMetadataObject& wmo) {
             if (old_state == worker_techspec_approve_state::approve) {
-                wtmo.approves--;
+                wmo.approves--;
             }
             if (old_state == worker_techspec_approve_state::disapprove) {
-                wtmo.disapproves--;
+                wmo.disapproves--;
             }
             if (new_state == worker_techspec_approve_state::approve) {
-                wtmo.approves++;
+                wmo.approves++;
             }
             if (new_state == worker_techspec_approve_state::disapprove) {
-                wtmo.disapproves++;
+                wmo.disapproves++;
             }
         });
     }
@@ -173,11 +174,11 @@ struct post_operation_visitor {
         auto wtao_itr = wtao_idx.find(std::make_tuple(wto_post.id, o.approver));
 
         if (wtao_itr != wtao_idx.end()) {
-            update_worker_techspec_approves(*wtmo_itr, _plugin.old_approve_state, wtao_itr->state);
+            update_worker_object_approves(*wtmo_itr, _plugin.old_approve_state, wtao_itr->state);
             return;
         }
 
-        update_worker_techspec_approves(*wtmo_itr, _plugin.old_approve_state, worker_techspec_approve_state::abstain);
+        update_worker_object_approves(*wtmo_itr, _plugin.old_approve_state, worker_techspec_approve_state::abstain);
     }
 
     result_type operator()(const worker_assign_operation& o) const {
