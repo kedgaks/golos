@@ -80,8 +80,8 @@ namespace golos { namespace chain {
 
         const comment_object* wto_post = nullptr;
         const auto& wto_idx = _db.get_index<worker_techspec_index, by_worker_proposal>();
-        auto wto_itr = wto_idx.find(wpo->post);
-        for (; wto_itr != wto_idx.end(); wto_itr++) {
+        auto wto_itr = wto_idx.lower_bound(wpo->post);
+        for (; wto_itr != wto_idx.end() && wto_itr->worker_proposal_post == wpo->post; wto_itr++) {
             wto_post = &_db.get_comment(wto_itr->post);
             if (wto_post->author == o.author) {
                 break;

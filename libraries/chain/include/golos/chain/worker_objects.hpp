@@ -121,7 +121,7 @@ namespace golos { namespace chain {
             ordered_unique<
                 tag<by_post>,
                 member<worker_techspec_object, comment_id_type, &worker_techspec_object::post>>,
-            ordered_unique<
+            ordered_non_unique<
                 tag<by_worker_proposal>,
                 member<worker_techspec_object, comment_id_type, &worker_techspec_object::worker_proposal_post>>,
             ordered_unique<
